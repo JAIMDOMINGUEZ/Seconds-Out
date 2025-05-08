@@ -5,7 +5,7 @@ abstract class Usuario {
   final int? id; // Nullable para inserts
   final String nombre;
   final String correo;
-  final String contrasena; // ¡Encriptar en producción!
+  final String contrasena; 
   final String? fotoUrl;
   final String fechaNacimiento;
 

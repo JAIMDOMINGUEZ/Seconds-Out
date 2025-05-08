@@ -1,5 +1,5 @@
 import 'package:floor/floor.dart';
-// lib/models/grupo.dart
+
 @Entity(tableName: 'grupos')
 class Grupo {
   @PrimaryKey(autoGenerate: true)

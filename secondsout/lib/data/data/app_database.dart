@@ -1,5 +1,19 @@
 import 'package:floor/floor.dart';
-import '../models/Usuario/Usuario.dart';
+import '../models/daos/atletaDao.dart';
+import '../models/daos/ejercicioAsignadoDao.dart';
+import '../models/daos/entrenadorDao.dart';
+import '../models/daos/evaluacionPruebaDao.dart';
+import '../models/daos/grupoDao.dart';
+import '../models/daos/medidaAntropometricaDao.dart';
+import '../models/daos/planeacionDao.dart';
+import '../models/daos/pruebaFisicaDao.dart';
+import '../models/daos/pruebaReglasDao.dart';
+import '../models/daos/pruebaTacticaDao.dart';
+import '../models/daos/pruebaTecnicaDao.dart';
+import '../models/daos/pruebaTecnicaDetallada.dart';
+import '../models/daos/semanaDao.dart';
+import '../models/daos/sesionDao.dart';
+import '../models/usuario.dart';
 import '../models/administrador.dart';
 import '../models/atleta.dart';
 import '../models/ejercicio.dart';
@@ -42,7 +56,7 @@ import '../models/sesion.dart';
   ],
 )
 abstract class AppDatabase extends FloorDatabase {
-  // Lista completa de DAOs
+
   EntrenadorDao get entrenadorDao;
   AtletaDao get atletaDao;
   GrupoDao get grupoDao;

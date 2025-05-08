@@ -1,5 +1,4 @@
 import 'package:floor/floor.dart';
-import 'package:secondsout/data/models/grupo.dart';
 
 import 'usuario.dart';
 
@@ -19,7 +18,7 @@ class Entrenador extends Usuario {
   @PrimaryKey(autoGenerate: true)
   final int? id;
 
-  final String licencia;
+
 
   Entrenador({
     this.id,
@@ -28,7 +27,7 @@ class Entrenador extends Usuario {
     required String contrasena,
     String? fotoUrl,
     required String fechaNacimiento,
-    required this.licencia,
+    
   }) : super(
           id: id,
           nombre: nombre,
@@ -46,12 +45,12 @@ class Entrenador extends Usuario {
         contrasena: json['contrasena'],
         fotoUrl: json['fotoUrl'],
         fechaNacimiento: json['fechaNacimiento'],
-        licencia: json['licencia'],
+        
       );
 
   Map<String, dynamic> toJson() => {
         ...super.toJson(),
-        'licencia': licencia,
+        
         'tipo': 'entrenador',
       };
 }

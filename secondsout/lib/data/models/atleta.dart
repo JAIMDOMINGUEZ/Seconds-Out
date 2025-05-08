@@ -1,4 +1,5 @@
 import 'package:floor/floor.dart';
+import 'usuario.dart';
 
 @Entity(
   tableName: 'atletas',
