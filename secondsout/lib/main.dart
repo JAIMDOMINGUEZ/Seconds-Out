@@ -13,12 +13,59 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Inicio de Sesión',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        // Paleta de colores
+        colorScheme: ColorScheme.light(
+          primary: Colors.black,           // Color principal (botones, AppBar)
+          secondary: Colors.grey[800]!,    // Color secundario
+          surface: Colors.white,           // Fondo de Cards/Dialogs
+          background: Colors.white,        // Fondo general
+          onPrimary: Colors.white,         // Texto sobre elementos primarios
+          onSurface: Colors.black,         // Texto principal
+        ),
+
+        // Estilo de inputs
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.grey[600]!),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+
+        // AppBar
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white,
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        // Botones
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.black, // Fondo
+            foregroundColor: Colors.white, // Texto
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        ),
+
+        // Textos
+        textTheme: TextTheme(
+          headlineLarge: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[800],
+          ),
         ),
       ),
       home: const LoginScreen(),

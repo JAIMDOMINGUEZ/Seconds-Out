@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'agregar_pruebas_screen.dart';
+import 'editar_prueba_screen.dart';
 
 class AdminPruebasScreen extends StatefulWidget {
   final String atletaId;
@@ -48,6 +49,29 @@ class _AdminPruebasScreenState extends State<AdminPruebasScreen> {
           ],
         );
       },
+    );
+
+  }
+  void _editarPrueba(Map<String, dynamic> prueba, int index) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditarPruebaScreen(
+          prueba: Map<String, dynamic>.from(prueba), // Pasa una copia de la prueba
+          onGuardar: (pruebaEditada) {
+            setState(() {
+              _pruebas[index] = pruebaEditada; // Actualiza la prueba con los cambios
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Prueba actualizada'),
+                backgroundColor: Colors.green,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -105,7 +129,7 @@ class _AdminPruebasScreenState extends State<AdminPruebasScreen> {
                   return _PruebaItem(
                     prueba: prueba,
                     onEdit: () {
-                      // Navegar a pantalla de edición
+                      _editarPrueba(prueba, index);
                     },
                     onDelete: () {
                       _mostrarDialogoConfirmacion(prueba['id']);

@@ -155,7 +155,7 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: const BoxDecoration(
-                            color: Colors.blue,
+                            color: Colors.black,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),

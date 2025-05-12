@@ -161,7 +161,7 @@ class _EditarEntrenadorScreenState extends State<EditarEntrenadorScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: const BoxDecoration(
-                            color: Colors.blue,
+                            color: Colors.grey,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
@@ -328,7 +328,7 @@ class _EditarEntrenadorScreenState extends State<EditarEntrenadorScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15),
-                        backgroundColor: Colors.blue,
+                        backgroundColor: Colors.black,
                       ),
                       child: const Text(
                         'Guardar',
@@ -342,11 +342,11 @@ class _EditarEntrenadorScreenState extends State<EditarEntrenadorScreen> {
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 15),
-                        side: const BorderSide(color: Colors.blue),
+                        side: const BorderSide(color: Colors.black),
                       ),
                       child: const Text(
                         'Cancelar',
-                        style: TextStyle(color: Colors.blue),
+                        style: TextStyle(color: Colors.black),
                       ),
                     ),
                   ),

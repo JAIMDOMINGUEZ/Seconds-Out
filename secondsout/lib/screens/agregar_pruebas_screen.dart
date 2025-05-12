@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:secondsout/data/models/prueba_fisica.dart';
+import 'package:secondsout/screens/prueba_psicologica_screen.dart';
+import 'package:secondsout/screens/prueba_reglas_screen.dart';
+import 'prueba_fisica_screen.dart';
+import 'prueba_tactica.dart';
 
 import 'prueba_tecnica_detallada_screen.dart';
 
@@ -30,7 +35,7 @@ class PruebasScreen extends StatefulWidget {
 
 class _PruebasScreenState extends State<PruebasScreen> {
   final List<Map<String, dynamic>> _pruebas = [
-    {'tipo': 'Fuerza', 'puntaje': 10, 'id': '1'},
+    {'tipo': 'Fisica', 'puntaje': 10, 'id': '1'},
     {
       'tipo': 'Tecnica Detallada',
       'puntaje': 8,
@@ -42,9 +47,37 @@ class _PruebasScreenState extends State<PruebasScreen> {
     {'tipo': 'Reglas', 'puntaje': 2, 'id': '5'},
   ];
 
+  DateTime _fechaSeleccionada = DateTime.now();
+
+  Future<void> _seleccionarFecha(BuildContext context) async {
+    final DateTime? fecha = await showDatePicker(
+      context: context,
+      initialDate: _fechaSeleccionada,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (fecha != null && fecha != _fechaSeleccionada) {
+      setState(() {
+        _fechaSeleccionada = fecha;
+      });
+    }
+  }
+
+  void _guardarPruebas() {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Pruebas guardadas correctamente'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+
+  }
+
   void _showAddTestDialog(BuildContext context) {
     final List<String> testTypes = [
-      'Fuerza',
+      'Fisica',
       'Tecnica Detallada',
       'Tactica',
       'Psicologica',
@@ -91,7 +124,83 @@ class _PruebasScreenState extends State<PruebasScreen> {
           builder: (context) => const AgregarPruebaTecnicaScreen(),
         ),
       );
-    } else {
+    } else if (testType == 'Fisica') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PruebaFisicaScreen(
+            onGuardar: (nuevaPrueba) {
+              setState(() {
+                _pruebas.add({
+                  'tipo': 'Fisica',
+                  'puntaje': nuevaPrueba.puntajeTotal,
+                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                  'detalles': {
+                    'rapidez': nuevaPrueba.rapidez,
+                    'fuerza': nuevaPrueba.fuerza,
+                    'reaccion': nuevaPrueba.reaccion,
+                    'explosividad': nuevaPrueba.explosividad,
+                    'coordinacion': nuevaPrueba.coordinacion,
+                  },
+                });
+              });
+            },
+          ),
+        ),
+      );
+    } else if (testType == 'Tactica') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PruebaTacticaScreen(
+            onGuardar: (nuevaPrueba) {
+              setState(() {
+                ;
+                _pruebas.add({
+                  'tipo': 'Tactica',
+                  'puntaje': nuevaPrueba.puntajeTotal,
+                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                  'detalles': {
+                    'distanciaCombate': nuevaPrueba.distanciaCombate,
+                    'preparacionOfensiva': nuevaPrueba.preparacionOfensiva,
+                    'eficienciaAtaque': nuevaPrueba.eficienciaAtaque,
+                    'eficienciaContraataque': nuevaPrueba.eficienciaContraataque,
+                    'entradaDistanciaCorta': nuevaPrueba.entradaDistanciaCorta,
+                    'salidaCuerpoACuerpo': nuevaPrueba.salidaCuerpoACuerpo,
+                  },
+                });
+              });
+            },
+          ),
+        ),
+      );
+    }else if(testType == 'Psicologica'){
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PruebaPsicologicaScreen(
+            onGuardar: (nuevaPrueba) {
+              // Lógica para guardar
+            },
+          ),
+        ),
+      );
+
+
+
+  }else if(testType == 'Reglas'){
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PruebaReglasScreen(
+            onGuardar: (nuevaPrueba) {
+              // Lógica para guardar
+            },
+          ),
+        ),
+      );
+  }
+    else {
       setState(() {
         _pruebas.add({
           'tipo': testType,
@@ -104,7 +213,7 @@ class _PruebasScreenState extends State<PruebasScreen> {
 
   void _editTest(int index) {
     if (_pruebas[index]['tipo'] == 'Tecnica Detallada') {
-      _editarTecnicaDetallada(index);
+      //_editarTecnicaDetallada(index);
     } else {
       _editarPruebaSimple(index);
     }
@@ -144,25 +253,7 @@ class _PruebasScreenState extends State<PruebasScreen> {
     );
   }
 
-  void _editarTecnicaDetallada(int index) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PruebaTecnicaDetalladaScreen(
-          tecnicasSeleccionadas:
-          List<String>.from(_pruebas[index]['detalles'] ?? []),
-        ),
-      ),
-    ).then((tecnicasSeleccionadas) {
-      if (tecnicasSeleccionadas != null) {
-        setState(() {
-          _pruebas[index]['detalles'] = tecnicasSeleccionadas;
-          _pruebas[index]['puntaje'] =
-              _calcularPuntaje(tecnicasSeleccionadas);
-        });
-      }
-    });
-  }
+
 
   void _deleteTest(int index) {
     showDialog(
@@ -201,9 +292,42 @@ class _PruebasScreenState extends State<PruebasScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Administrar Pruebas'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _guardarPruebas,
+            tooltip: 'Guardar todas las pruebas',
+          ),
+        ],
       ),
       body: Column(
         children: [
+          // Campo de fecha agregado aquí
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: InkWell(
+              onTap: () => _seleccionarFecha(context),
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Fecha',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${_fechaSeleccionada.day}/${_fechaSeleccionada.month}/${_fechaSeleccionada.year}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const Icon(Icons.calendar_today, size: 20),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -299,26 +423,4 @@ class _PruebasScreenState extends State<PruebasScreen> {
     );
   }
 }
-
-class PruebaTecnicaDetalladaScreen extends StatelessWidget {
-  final List<String> tecnicasSeleccionadas;
-
-  const PruebaTecnicaDetalladaScreen({super.key, required this.tecnicasSeleccionadas});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Editar Técnica Detallada'),
-      ),
-      body: Center(
-        child: Text(
-          'Técnicas seleccionadas: ${tecnicasSeleccionadas.join(', ')}',
-          style: const TextStyle(fontSize: 18),
-        ),
-      ),
-    );
-  }
-}
-
 

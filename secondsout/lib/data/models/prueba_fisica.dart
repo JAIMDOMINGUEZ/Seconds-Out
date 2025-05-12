@@ -10,15 +10,25 @@ class PruebaFisica {
   PruebaFisica({
     required this.pruebaTecnicaId,
     required this.resistencia,
-    required this.rapidez,
+    required this.rapidez, required int fuerza, required int reaccion, required int explosividad, required int coordinacion, required DateTime fecha,
   });
 
+  get puntajeTotal => null;
+
+  get fuerza => null;
+
+  get reaccion => null;
+
+  get explosividad => null;
+
+  get coordinacion => null;
+/*
   factory PruebaFisica.fromJson(Map<String, dynamic> json) => PruebaFisica(
         pruebaTecnicaId: json['pruebaTecnicaId'],
         resistencia: json['resistencia'],
-        rapidez: json['rapidez'],
+        rapidez: json['rapidez'], fuerza: ['fuerza'],
       );
-
+*/
   Map<String, dynamic> toJson() => {
         'pruebaTecnicaId': pruebaTecnicaId,
         'resistencia': resistencia,

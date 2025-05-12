@@ -31,13 +31,7 @@ class InformacionAtletaScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Información Atleta',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+
             const SizedBox(height: 30),
 
             // Foto y nombre principal

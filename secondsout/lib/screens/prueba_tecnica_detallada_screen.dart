@@ -9,37 +9,21 @@ class AgregarPruebaTecnicaScreen extends StatefulWidget {
 
 class _AgregarPruebaTecnicaScreenState extends State<AgregarPruebaTecnicaScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _distanciaController = TextEditingController();
-  final TextEditingController _movilidadController = TextEditingController();
-  final TextEditingController _tecnicaDefensivaController = TextEditingController();
-  final TextEditingController _variabilidadController = TextEditingController();
+  int _distanciaGolpeo = 0;
+  int _movilidad = 0;
+  int _tecnicaDefensiva = 0;
+  int _variabilidadDefensiva = 0;
+  int _tecnicaGolpeo = 0;
+  final List<int> _opciones = [0, 1, 2];
 
-  @override
-  void dispose() {
-    _distanciaController.dispose();
-    _movilidadController.dispose();
-    _tecnicaDefensivaController.dispose();
-    _variabilidadController.dispose();
-    super.dispose();
-  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Agregar Prueba Tecnicaaa'),
+        title: const Text('Prueba Técnica Detallada'),
         centerTitle: true,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Center(
-              child: Text(
-                '9:41',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -48,91 +32,54 @@ class _AgregarPruebaTecnicaScreenState extends State<AgregarPruebaTecnicaScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Prueba Tecnica Detalladaaa',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 30),
-              const Divider(thickness: 2),
-              const SizedBox(height: 20),
 
-              const Text(
-                'Tecnica de Golpeoa',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Center(
+                child: Icon(
+                  Icons.circle_outlined, // Icono de gimnasio/ejercicio
+                  size: 90,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
               const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
-              // Campo Distancia de Golpeo
-              TextFormField(
-                controller: _distanciaController,
-                decoration: const InputDecoration(
-                  labelText: 'Distancia de Golpeo',
-                  border: OutlineInputBorder(),
-                  hintText: 'Ingrese la distancia de golpeo',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese este dato';
-                  }
-                  return null;
-                },
+              _buildDropdownItem(
+                'Tecnica de Golpeo',
+                _tecnicaGolpeo,
+                    (value) => setState(() => _tecnicaGolpeo = value!),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Dropdown Distancia de Golpeo
+              _buildDropdownItem(
+                'Distancia de Golpeo',
+                _distanciaGolpeo,
+                    (value) => setState(() => _distanciaGolpeo = value!),
               ),
               const SizedBox(height: 20),
 
-              // Campo Movilidad
-              TextFormField(
-                controller: _movilidadController,
-                decoration: const InputDecoration(
-                  labelText: 'Movilidad',
-                  border: OutlineInputBorder(),
-                  hintText: 'Ingrese los datos de movilidad',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese este dato';
-                  }
-                  return null;
-                },
+              // Dropdown Movilidad
+              _buildDropdownItem(
+                'Movilidad',
+                _movilidad,
+                    (value) => setState(() => _movilidad = value!),
               ),
               const SizedBox(height: 20),
 
-              // Campo Tecnica Defensiva
-              TextFormField(
-                controller: _tecnicaDefensivaController,
-                decoration: const InputDecoration(
-                  labelText: 'Tecnica Defensiva',
-                  border: OutlineInputBorder(),
-                  hintText: 'Ingrese la técnica defensiva',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese este dato';
-                  }
-                  return null;
-                },
+              // Dropdown Técnica Defensiva
+              _buildDropdownItem(
+                'Técnica Defensiva',
+                _tecnicaDefensiva,
+                    (value) => setState(() => _tecnicaDefensiva = value!),
               ),
               const SizedBox(height: 20),
 
-              // Campo Variabilidad Defensiva
-              TextFormField(
-                controller: _variabilidadController,
-                decoration: const InputDecoration(
-                  labelText: 'Variabilidad Defensiva',
-                  border: OutlineInputBorder(),
-                  hintText: 'Ingrese la variabilidad defensiva',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese este dato';
-                  }
-                  return null;
-                },
+              // Dropdown Variabilidad Defensiva
+              _buildDropdownItem(
+                'Variabilidad Defensiva',
+                _variabilidadDefensiva,
+                    (value) => setState(() => _variabilidadDefensiva = value!),
               ),
               const SizedBox(height: 40),
 
@@ -144,7 +91,6 @@ class _AgregarPruebaTecnicaScreenState extends State<AgregarPruebaTecnicaScreen>
                     child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          // Procesar el formulario
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Prueba técnica guardada exitosamente'),
@@ -178,10 +124,39 @@ class _AgregarPruebaTecnicaScreenState extends State<AgregarPruebaTecnicaScreen>
       ),
     );
   }
+
+  Widget _buildDropdownItem(String label, int value, Function(int?) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<int>(
+            value: value,
+            items: _opciones.map((int value) {
+              return DropdownMenuItem<int>(
+                value: value,
+                child: Text(value.toString()),
+              );
+            }).toList(),
+            onChanged: onChanged,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            validator: (value) {
+              if (value == null) return 'Selecciona un valor';
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-void main() {
-  runApp(const MaterialApp(
-    home: AgregarPruebaTecnicaScreen(),
-  ));
-}
