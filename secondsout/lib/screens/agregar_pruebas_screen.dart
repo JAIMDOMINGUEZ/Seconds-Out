@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:secondsout/data/models/prueba_fisica.dart';
 import 'package:secondsout/screens/prueba_psicologica_screen.dart';
 import 'package:secondsout/screens/prueba_reglas_screen.dart';
+import '../data/models/prueba_psicologica.dart';
+import '../data/models/prueba_tactica.dart';
+import '../data/models/pruebas_regla.dart';
 import 'prueba_fisica_screen.dart';
-import 'prueba_tactica.dart';
-
+import 'prueba_tactica_screen.dart';
 import 'prueba_tecnica_detallada_screen.dart';
-
+import 'editar_prueba_fisica_screen.dart';
+import 'editar_prueba_tecnica_detallada_screen.dart';
+import 'editar_prueba_tactica_screen.dart';
+import 'editar_prueba_psicologica_screen.dart';
+import 'editar_prueba_reglas_screen.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -21,19 +27,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const PruebasScreen(),
+      home: const AgregarPruebasScreen(),
     );
   }
 }
 
-class PruebasScreen extends StatefulWidget {
-  const PruebasScreen({super.key});
+class AgregarPruebasScreen extends StatefulWidget {
+  const AgregarPruebasScreen({super.key});
 
   @override
-  State<PruebasScreen> createState() => _PruebasScreenState();
+  State<AgregarPruebasScreen> createState() => _AgregarPruebasScreenState();
 }
 
-class _PruebasScreenState extends State<PruebasScreen> {
+class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
   final List<Map<String, dynamic>> _pruebas = [
     {'tipo': 'Fisica', 'puntaje': 10, 'id': '1'},
     {
@@ -64,15 +70,12 @@ class _PruebasScreenState extends State<PruebasScreen> {
   }
 
   void _guardarPruebas() {
-
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Pruebas guardadas correctamente'),
         duration: Duration(seconds: 2),
       ),
     );
-
-
   }
 
   void _showAddTestDialog(BuildContext context) {
@@ -84,6 +87,21 @@ class _PruebasScreenState extends State<PruebasScreen> {
       'Reglas'
     ];
 
+    // Filtrar solo los tipos que no están ya en las pruebas
+    final availableTestTypes = testTypes.where((type) {
+      return !_pruebas.any((prueba) => prueba['tipo'] == type);
+    }).toList();
+
+    if (availableTestTypes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ya existen pruebas de todos los tipos disponibles'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -93,13 +111,13 @@ class _PruebasScreenState extends State<PruebasScreen> {
             width: double.maxFinite,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: testTypes.length,
+              itemCount: availableTestTypes.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(testTypes[index]),
+                  title: Text(availableTestTypes[index]),
                   onTap: () {
                     Navigator.pop(context);
-                    _addNewTest(testTypes[index]);
+                    _addNewTest(availableTestTypes[index]);
                   },
                 );
               },
@@ -117,6 +135,17 @@ class _PruebasScreenState extends State<PruebasScreen> {
   }
 
   void _addNewTest(String testType) {
+    // Verificación adicional por si acaso
+    if (_pruebas.any((prueba) => prueba['tipo'] == testType)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ya existe una prueba de tipo $testType'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
     if (testType == 'Tecnica Detallada') {
       Navigator.push(
         context,
@@ -155,7 +184,6 @@ class _PruebasScreenState extends State<PruebasScreen> {
           builder: (context) => PruebaTacticaScreen(
             onGuardar: (nuevaPrueba) {
               setState(() {
-                ;
                 _pruebas.add({
                   'tipo': 'Tactica',
                   'puntaje': nuevaPrueba.puntajeTotal,
@@ -174,33 +202,50 @@ class _PruebasScreenState extends State<PruebasScreen> {
           ),
         ),
       );
-    }else if(testType == 'Psicologica'){
+    } else if (testType == 'Psicologica') {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => PruebaPsicologicaScreen(
             onGuardar: (nuevaPrueba) {
-              // Lógica para guardar
+              setState(() {
+                _pruebas.add({
+                  'tipo': 'Psicologica',
+                  'puntaje': nuevaPrueba.puntajeTotal,
+                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                  'detalles': {
+                    'autocontrol': nuevaPrueba.autocontrol,
+                    'combatividad': nuevaPrueba.combatividad,
+                    'iniciativa': nuevaPrueba.iniciativa,
+                  },
+                });
+              });
             },
           ),
         ),
       );
-
-
-
-  }else if(testType == 'Reglas'){
+    } else if (testType == 'Reglas') {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => PruebaReglasScreen(
             onGuardar: (nuevaPrueba) {
-              // Lógica para guardar
+              setState(() {
+                _pruebas.add({
+                  'tipo': 'Reglas',
+                  'puntaje': nuevaPrueba.puntajeTotal,
+                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                  'detalles': {
+                    'faltasTecnicas': nuevaPrueba.faltasTecnicas,
+                    'conductaCombativa': nuevaPrueba.conductaCombativa,
+                  },
+                });
+              });
             },
           ),
         ),
       );
-  }
-    else {
+    } else {
       setState(() {
         _pruebas.add({
           'tipo': testType,
@@ -212,10 +257,156 @@ class _PruebasScreenState extends State<PruebasScreen> {
   }
 
   void _editTest(int index) {
-    if (_pruebas[index]['tipo'] == 'Tecnica Detallada') {
-      //_editarTecnicaDetallada(index);
-    } else {
-      _editarPruebaSimple(index);
+    final prueba = _pruebas[index];
+    final tipo = prueba['tipo'];
+    final detalles = prueba['detalles'] ?? {};
+
+    switch (tipo) {
+      case 'Fisica':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditarPruebaFisicaScreen(
+              pruebaExistente: PruebaFisica(
+                rapidez: detalles['rapidez'] ?? 0,
+                fuerza: detalles['fuerza'] ?? 0,
+                reaccion: detalles['reaccion'] ?? 0,
+                explosividad: detalles['explosividad'] ?? 0,
+                coordinacion: detalles['coordinacion'] ?? 0, pruebaTecnicaId: 1, resistencia: detalles['resistencia'] ?? 0,
+              ),
+              onGuardar: (pruebaActualizada) {
+                setState(() {
+                  _pruebas[index] = {
+                    ..._pruebas[index],
+                    'puntaje': pruebaActualizada.puntajeTotal,
+                    'detalles': {
+                      'rapidez': pruebaActualizada.rapidez,
+                      'fuerza': pruebaActualizada.fuerza,
+                      'reaccion': pruebaActualizada.reaccion,
+                      'explosividad': pruebaActualizada.explosividad,
+                      'coordinacion': pruebaActualizada.coordinacion,
+                      'resistencia': pruebaActualizada.resistencia,
+                    },
+                  };
+                });
+              },
+            ),
+          ),
+        );
+        break;
+
+      case 'Tecnica Detallada':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditarPruebaTecnicaDetalladaScreen(
+              pruebaExistente: _pruebas[index]['detalles'] is Map
+                  ? Map<String, dynamic>.from(_pruebas[index]['detalles'])
+                  : null,
+              onGuardar: (pruebaActualizada) {
+                setState(() {
+                  _pruebas[index] = {
+                    ..._pruebas[index],
+                    'puntaje': pruebaActualizada['puntaje'],
+                    'detalles': pruebaActualizada['detalles'],
+                  };
+                });
+              },
+            ),
+          ),
+        );
+        break;
+
+      case 'Tactica':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditarPruebaTacticaScreen(
+              pruebaExistente: PruebaTactica(
+                distanciaCombate: detalles['distanciaCombate'] ?? 0,
+                preparacionOfensiva: detalles['preparacionOfensiva'] ?? 0,
+                eficienciaAtaque: detalles['eficienciaAtaque'] ?? 0,
+                eficienciaContraataque: detalles['eficienciaContraataque'] ?? 0,
+                entradaDistanciaCorta: detalles['entradaDistanciaCorta'] ?? 0,
+                salidaCuerpoACuerpo: detalles['salidaCuerpoACuerpo'] ?? 0, pruebaTecnicaId: 1,
+              ),
+              onGuardar: (pruebaActualizada) {
+                setState(() {
+                  _pruebas[index] = {
+                    ..._pruebas[index],
+                    'puntaje': pruebaActualizada.puntajeTotal,
+                    'detalles': {
+                      'distanciaCombate': pruebaActualizada.distanciaCombate,
+                      'preparacionOfensiva': pruebaActualizada.preparacionOfensiva,
+                      'eficienciaAtaque': pruebaActualizada.eficienciaAtaque,
+                      'eficienciaContraataque': pruebaActualizada.eficienciaContraataque,
+                      'entradaDistanciaCorta': pruebaActualizada.entradaDistanciaCorta,
+                      'salidaCuerpoACuerpo': pruebaActualizada.salidaCuerpoACuerpo,
+                    },
+                  };
+                });
+              },
+            ),
+          ),
+        );
+        break;
+
+      case 'Psicologica':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditarPruebaPsicologicaScreen(
+              pruebaExistente: PruebaPsicologica(
+                autocontrol: detalles['autocontrol'] ?? 0,
+                combatividad: detalles['combatividad'] ?? 0,
+                iniciativa: detalles['iniciativa'] ?? 0, pruebaTecnicaId: 1,
+              ),
+              onGuardar: (pruebaActualizada) {
+                setState(() {
+                  _pruebas[index] = {
+                    ..._pruebas[index],
+                    'puntaje': pruebaActualizada.puntajeTotal,
+                    'detalles': {
+                      'autocontrol': pruebaActualizada.autocontrol,
+                      'combatividad': pruebaActualizada.combatividad,
+                      'iniciativa': pruebaActualizada.iniciativa,
+                    },
+                  };
+                });
+              },
+            ),
+          ),
+        );
+        break;
+
+      case 'Reglas':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EditarPruebaReglasScreen(
+              pruebaExistente: PruebaReglas(
+                faltasTecnicas: detalles['faltasTecnicas'] ?? 0,
+                conductaCombativa: detalles['conductaCombativa'] ?? 0, pruebaTecnicaId: 1,
+              ),
+              onGuardar: (pruebaActualizada) {
+                setState(() {
+                  _pruebas[index] = {
+                    ..._pruebas[index],
+                    'puntaje': pruebaActualizada.puntajeTotal,
+                    'detalles': {
+                      'faltasTecnicas': pruebaActualizada.faltasTecnicas,
+                      'conductaCombativa': pruebaActualizada.conductaCombativa,
+                    },
+                  };
+                });
+              },
+            ),
+          ),
+        );
+        break;
+
+      default:
+        _editarPruebaSimple(index);
     }
   }
 
@@ -241,8 +432,7 @@ class _PruebasScreenState extends State<PruebasScreen> {
           TextButton(
             onPressed: () {
               setState(() {
-                _pruebas[index]['puntaje'] =
-                    int.tryParse(controller.text) ?? 0;
+                _pruebas[index]['puntaje'] = int.tryParse(controller.text) ?? 0;
               });
               Navigator.pop(context);
             },
@@ -252,8 +442,6 @@ class _PruebasScreenState extends State<PruebasScreen> {
       ),
     );
   }
-
-
 
   void _deleteTest(int index) {
     showDialog(
@@ -283,15 +471,11 @@ class _PruebasScreenState extends State<PruebasScreen> {
     );
   }
 
-  int _calcularPuntaje(List<String> tecnicas) {
-    return tecnicas.length * 2;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Administrar Pruebas'),
+        title: const Text('Agregar Pruebas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -302,7 +486,6 @@ class _PruebasScreenState extends State<PruebasScreen> {
       ),
       body: Column(
         children: [
-          // Campo de fecha agregado aquí
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: InkWell(
@@ -326,8 +509,6 @@ class _PruebasScreenState extends State<PruebasScreen> {
               ),
             ),
           ),
-
-
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -350,18 +531,50 @@ class _PruebasScreenState extends State<PruebasScreen> {
 
   Widget _buildTestCard(int index) {
     final prueba = _pruebas[index];
+
+    // Definimos los iconos y colores para cada tipo de prueba
+    IconData icon;
+    Color color;
+
+    switch (prueba['tipo']) {
+      case 'Fisica':
+        icon = Icons.fitness_center;
+        color = Colors.black;
+        break;
+      case 'Tecnica Detallada':
+        icon = Icons.circle_outlined;
+        color = Colors.black;
+        break;
+      case 'Tactica':
+        icon = Icons.adjust_rounded;
+        color = Colors.black;
+        break;
+      case 'Psicologica':
+        icon = Icons.psychology;
+        color = Colors.black;
+        break;
+      case 'Reglas':
+        icon = Icons.check_circle_outline;
+        color = Colors.black;
+        break;
+      default:
+        icon = Icons.help_outline;
+        color = Colors.grey;
+    }
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
+            Expanded(
+              child: Row(
+                children: [
+                  Icon(icon, color: color, size: 30),
+                  const SizedBox(width: 12),
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -371,35 +584,28 @@ class _PruebasScreenState extends State<PruebasScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
                       Text(
                         'Puntaje: ${prueba['puntaje']}',
                         style: const TextStyle(fontSize: 16),
                       ),
                     ],
                   ),
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  onPressed: () => _editTest(index),
                 ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
-                      onPressed: () => _editTest(index),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteTest(index),
-                    ),
-                  ],
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _deleteTest(index),
                 ),
               ],
             ),
-            if (prueba['detalles'] != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                'Técnicas: ${(prueba['detalles'] as List).join(', ')}',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-            ],
           ],
         ),
       ),
@@ -423,4 +629,3 @@ class _PruebasScreenState extends State<PruebasScreen> {
     );
   }
 }
-

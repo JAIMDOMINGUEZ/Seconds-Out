@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:secondsout/screens/admin_entrenadores_screen.dart';
 
-import 'admin_atletas_screen.dart'; // Si están en la misma carpeta
+import 'admin_atletas_screen.dart';
+import 'admin_ejercicios_screen.dart';
+import 'admin_planeacion_screen.dart';
+import 'agregar_ejercicio_screen.dart'; // Si están en la misma carpeta
 void main() {
   runApp(const MenuApp());
 }
@@ -92,7 +95,12 @@ class MenuScreen extends StatelessWidget {
               icon: Icons.fitness_center, // Icono provisional para Ejercicios
               title: 'Ejercicios',
               onTap: () {
-                // Navegar a pantalla de Ejercicios
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AdminEjerciciosScreen(),
+                  ),
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -101,7 +109,12 @@ class MenuScreen extends StatelessWidget {
               icon: Icons.calendar_today, // Icono provisional para Planeaciones
               title: 'Planeaciones',
               onTap: () {
-                // Navegar a pantalla de Planeaciones
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AdminPlaneacionScreen(),
+                  ),
+                );
               },
             ),
           ],

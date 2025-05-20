@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'admin_medidas_screen.dart';
 import 'admin_pruebas_screen.dart'; // Asegúrate de crear este archivo
 
 class InformacionAtletaScreen extends StatelessWidget {
@@ -68,9 +69,17 @@ class InformacionAtletaScreen extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // Botones de acción - CON NAVEGACIÓN IMPLEMENTADA
+
             ElevatedButton(
               onPressed: () {
+    Navigator.push(
+    context,
+    MaterialPageRoute(
+    builder: (context) => AdminMedidasScreen(
+    medidas: atleta['medidas'] ?? [], // Asegúrate que atleta tenga este campo
+    ),
+    ),
+    );
 
               },
               style: ElevatedButton.styleFrom(
@@ -141,5 +150,3 @@ class InformacionAtletaScreen extends StatelessWidget {
   }
 }
 
-class AdminMedidasScreen {
-}

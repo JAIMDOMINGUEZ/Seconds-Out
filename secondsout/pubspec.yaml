@@ -16,6 +16,7 @@ dependencies:
   firebase_auth: ^4.20.0
   firebase_storage: ^11.7.7
 
+  syncfusion_flutter_charts: ^20.4.48
   # Base de datos local
   floor: ^1.5.0
   floor_annotation: ^1.5.0

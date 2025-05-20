@@ -22,6 +22,8 @@ class PruebaPsicologica {
         iniciativa: json['iniciativa'] as int,
       );
 
+  get puntajeTotal => null;
+
   Map<String, dynamic> toJson() => {
         'pruebaTecnicaId': pruebaTecnicaId,
         'autocontrol': autocontrol,

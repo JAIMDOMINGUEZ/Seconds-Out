@@ -19,6 +19,8 @@ class PruebaReglas {
         conductaCombativa: json['conductaCombativa'] as int,
       );
 
+  get puntajeTotal => null;
+
   Map<String, dynamic> toJson() => {
         'pruebaTecnicaId': pruebaTecnicaId,
         'faltasTecnicas': faltasTecnicas,

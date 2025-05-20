@@ -10,7 +10,7 @@ class PruebaFisica {
   PruebaFisica({
     required this.pruebaTecnicaId,
     required this.resistencia,
-    required this.rapidez, required int fuerza, required int reaccion, required int explosividad, required int coordinacion, required DateTime fecha,
+    required this.rapidez, required int fuerza, required int reaccion, required int explosividad, required int coordinacion,
   });
 
   get puntajeTotal => null;

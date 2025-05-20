@@ -19,12 +19,47 @@ class AdminPruebasScreen extends StatefulWidget {
 
 class _AdminPruebasScreenState extends State<AdminPruebasScreen> {
   List<Map<String, dynamic>> _pruebas = [
-    {'id': '1', 'fecha': '05/12/25', 'estado': 'BIEN'},
-    {'id': '2', 'fecha': '11/03/24', 'estado': 'BIEN' },
-    {'id': '3', 'fecha': '02/18/23', 'estado': 'REGULAR' },
-    {'id': '4', 'fecha': '09/30/21', 'estado': 'BIEN' },
-    {'id': '5', 'fecha': '07/04/20', 'estado': 'BIEN'},
+    {
+      'id': '1',
+      'fecha': '05/12/25',
+      'estado': 'BIEN',
+      'pruebasCompletadas': ['Fisica', 'Tecnica Detallada', 'Tactica', 'Psicologica', 'Reglas']
+    },
+    {
+      'id': '2',
+      'fecha': '11/03/24',
+      'estado': 'BIEN',
+      'pruebasCompletadas': ['Fisica', 'Tactica', 'Reglas'] // Faltan 2
+    },
+    {
+      'id': '3',
+      'fecha': '02/18/23',
+      'estado': 'REGULAR',
+      'pruebasCompletadas': ['Fisica', 'Tecnica Detallada']
+    },
+    {
+      'id': '4',
+      'fecha': '09/30/21',
+      'estado': 'BIEN',
+      'pruebasCompletadas': ['Fisica', 'Tecnica Detallada', 'Tactica', 'Psicologica', 'Reglas']
+    },
+    {
+      'id': '5',
+      'fecha': '07/04/20',
+      'estado': 'BIEN',
+      'pruebasCompletadas': ['Tactica'] // Faltan 4
+    },
   ];
+
+  // Verifica si una prueba está completa
+  bool _esPruebaCompleta(Map<String, dynamic> prueba) {
+    final completadas = prueba['pruebasCompletadas'] as List<String>;
+    return completadas.contains('Fisica') &&
+        completadas.contains('Tecnica Detallada') &&
+        completadas.contains('Tactica') &&
+        completadas.contains('Psicologica') &&
+        completadas.contains('Reglas');
+  }
 
   Future<void> _mostrarDialogoConfirmacion(String id) async {
     return showDialog<void>(
@@ -50,26 +85,32 @@ class _AdminPruebasScreenState extends State<AdminPruebasScreen> {
         );
       },
     );
-
   }
+
   void _editarPrueba(Map<String, dynamic> prueba, int index) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditarPruebaScreen(
-          prueba: Map<String, dynamic>.from(prueba), // Pasa una copia de la prueba
+        builder: (context) => EditarPruebasScreen(
+          prueba: {
+            ...Map<String, dynamic>.from(prueba), // Copia todos los datos existentes
+            'fecha': prueba['fecha'], // Asegura que la fecha se incluya
+          },
           onGuardar: (pruebaEditada) {
             setState(() {
-              _pruebas[index] = pruebaEditada; // Actualiza la prueba con los cambios
+              _pruebas[index] = pruebaEditada;
+
+              _pruebas[index]['estado'] = _esPruebaCompleta(pruebaEditada)
+                  ? pruebaEditada['estado']
+                  : 'PENDIENTE';
             });
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Prueba actualizada'),
-                backgroundColor: Colors.green,
-                duration: Duration(seconds: 2),
-              ),
-            );
-          },
+                const SnackBar(
+                  content: Text('Prueba actualizada'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ));
+            },
         ),
       ),
     );
@@ -80,13 +121,12 @@ class _AdminPruebasScreenState extends State<AdminPruebasScreen> {
       _pruebas.removeWhere((prueba) => prueba['id'] == id);
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Prueba eliminada'),
-        backgroundColor: Colors.red,
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
+        const SnackBar(
+          content: Text('Prueba eliminada'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ));
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -126,14 +166,15 @@ class _AdminPruebasScreenState extends State<AdminPruebasScreen> {
                 itemCount: _pruebas.length,
                 itemBuilder: (context, index) {
                   final prueba = _pruebas[index];
+                  final estaCompleta = _esPruebaCompleta(prueba);
+                  final estado = estaCompleta ? prueba['estado'] : 'PENDIENTE';
+
                   return _PruebaItem(
                     prueba: prueba,
-                    onEdit: () {
-                      _editarPrueba(prueba, index);
-                    },
-                    onDelete: () {
-                      _mostrarDialogoConfirmacion(prueba['id']);
-                    },
+                    estado: estado,
+                    estaCompleta: estaCompleta,
+                    onEdit: () => _editarPrueba(prueba, index),
+                    onDelete: () => _mostrarDialogoConfirmacion(prueba['id']),
                   );
                 },
               ),
@@ -154,14 +195,20 @@ class _AdminPruebasScreenState extends State<AdminPruebasScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PruebasScreen(
+              builder: (context) => AgregarPruebasScreen(
                 // Si necesitas pasar parámetros, debes primero modificar el constructor de PruebasScreen
                 // para que los acepte:
                 // atletaId: widget.atletaId,
                 // nombreAtleta: widget.nombreAtleta,
               ),
             ),
-          );
+          ).then((nuevaPrueba) {
+            if (nuevaPrueba != null) {
+              setState(() {
+                _pruebas.add(nuevaPrueba);
+              });
+            }
+          });
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -176,16 +223,22 @@ class _AdminPruebasScreenState extends State<AdminPruebasScreen> {
 
 class _PruebaItem extends StatelessWidget {
   final Map<String, dynamic> prueba;
+  final String estado;
+  final bool estaCompleta;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   const _PruebaItem({
     required this.prueba,
+    required this.estado,
+    required this.estaCompleta,
     required this.onEdit,
     required this.onDelete,
   });
 
-  Color _getColorByEstado(String estado) {
+  Color _getColorByEstado(String estado, bool estaCompleta) {
+    if (!estaCompleta) return Colors.grey;
+
     switch (estado) {
       case 'BIEN':
         return Colors.green;
@@ -193,6 +246,8 @@ class _PruebaItem extends StatelessWidget {
         return Colors.orange;
       case 'MAL':
         return Colors.red;
+      case 'PENDIENTE':
+        return Colors.grey;
       default:
         return Colors.grey;
     }
@@ -211,7 +266,7 @@ class _PruebaItem extends StatelessWidget {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: _getColorByEstado(prueba['estado']),
+            color: _getColorByEstado(estado, estaCompleta),
             borderRadius: BorderRadius.circular(8),
           ),
           child: const Icon(Icons.assignment, color: Colors.white),
@@ -226,8 +281,12 @@ class _PruebaItem extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            Text('Estado: ${prueba['estado']}'),
+            Text('Estado: $estado'),
+            if (!estaCompleta)
+              Text(
+                'Faltan pruebas: ${5 - (prueba['pruebasCompletadas'] as List).length}',
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
           ],
         ),
         trailing: Row(
