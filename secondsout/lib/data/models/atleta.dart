@@ -10,21 +10,20 @@ class Atleta {
   final int? id;
   final int usuarioId;
   final DateTime fechaNacimiento;
-  final String categoria;
 
-  Atleta({this.id, required this.usuarioId, required this.fechaNacimiento, required this.categoria});
+
+  Atleta({this.id, required this.usuarioId, required this.fechaNacimiento});
 
   factory Atleta.fromJson(Map<String, dynamic> json) => Atleta(
     id: json['id'],
     usuarioId: json['usuarioId'],
-    fechaNacimiento: DateTime.parse(json['fechaNacimiento']),
-    categoria: json['categoria'],
+    fechaNacimiento: DateTime.parse(json['fechaNacimiento'])
   );
 
   Map<String, dynamic> toJson() => {
     'id': id,
     'usuarioId': usuarioId,
     'fechaNacimiento': fechaNacimiento.toIso8601String(),
-    'categoria': categoria,
+
   };
 }

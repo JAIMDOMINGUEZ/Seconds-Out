@@ -172,7 +172,7 @@ class _AdminEntrenadoresScreenState extends State<AdminEntrenadoresScreen> {
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const RegistrarEntrenadorScreen(),
+              builder: (context) =>  RegistrarEntrenadorScreen(),
             ),
           );
           if (result != null) {

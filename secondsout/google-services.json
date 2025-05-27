@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "524206128174",
+    "project_id": "secondsout-44f9f",
+    "storage_bucket": "secondsout-44f9f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524206128174:android:9a3a2ab75113211f2b33bf",
+        "android_client_info": {
+          "package_name": "com.example.secondsout"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0mtud2oAiYtZLMt4TRJlDvoFFyQWrsps"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

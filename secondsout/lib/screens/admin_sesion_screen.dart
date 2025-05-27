@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'detalles_sesion_screen.dart'; // Importar la pantalla de detalles
 
 class AdministrarSesionesScreen extends StatefulWidget {
   final String nombreSemana;
@@ -18,8 +18,7 @@ class AdministrarSesionesScreen extends StatefulWidget {
 }
 
 class _AdministrarSesionesScreenState extends State<AdministrarSesionesScreen> {
-  final List<String> _diasSeleccionados = [];
-  final List<String> _diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+  final List<String> _sesiones = [];
   int? _indiceEdicion;
 
   @override
@@ -35,7 +34,6 @@ class _AdministrarSesionesScreenState extends State<AdministrarSesionesScreen> {
       ),
       body: Column(
         children: [
-          // Encabezado informativo
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -46,7 +44,7 @@ class _AdministrarSesionesScreenState extends State<AdministrarSesionesScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Días de entrenamiento',
+                  'Sesiones de entrenamiento',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -56,7 +54,7 @@ class _AdministrarSesionesScreenState extends State<AdministrarSesionesScreen> {
                 Chip(
                   backgroundColor: Colors.blue.shade100,
                   label: Text(
-                    '${_diasSeleccionados.length} días',
+                    '${_sesiones.length} sesiones',
                     style: TextStyle(
                       color: Colors.blue.shade800,
                     ),
@@ -65,25 +63,21 @@ class _AdministrarSesionesScreenState extends State<AdministrarSesionesScreen> {
               ],
             ),
           ),
-
-          // Lista de sesiones
           Expanded(
-            child: _diasSeleccionados.isEmpty
+            child: _sesiones.isEmpty
                 ? const Center(
               child: Text(
-                'No hay días agregados',
+                'No hay sesiones agregadas',
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             )
                 : ListView.builder(
-              itemCount: _diasSeleccionados.length,
+              itemCount: _sesiones.length,
               itemBuilder: (context, index) {
-                return _buildSesionItem(_diasSeleccionados[index], index);
+                return _buildSesionItem(_sesiones[index], index);
               },
             ),
           ),
-
-          // Botón de agregar
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: _buildAddButton(context),
@@ -97,8 +91,8 @@ class _AdministrarSesionesScreenState extends State<AdministrarSesionesScreen> {
     return Center(
       child: ElevatedButton.icon(
         icon: const Icon(Icons.add),
-        label: const Text('Agregar Día'),
-        onPressed: () => _mostrarDialogoDia(context),
+        label: const Text('Agregar Sesión'),
+        onPressed: () => _mostrarDialogoSesion(context),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
@@ -109,85 +103,71 @@ class _AdministrarSesionesScreenState extends State<AdministrarSesionesScreen> {
     );
   }
 
-  void _mostrarDialogoDia(BuildContext context, [int? index]) {
-    String? diaSeleccionado;
+  void _mostrarDialogoSesion(BuildContext context, [int? index]) {
+    String nombreSesion = '';
     final esEdicion = index != null;
-    final diasDisponibles = esEdicion
-        ? _diasSemana
-        : _diasSemana.where((dia) => !_diasSeleccionados.contains(dia)).toList();
 
     if (esEdicion) {
-      diaSeleccionado = _diasSeleccionados[index];
+      nombreSesion = _sesiones[index];
     }
 
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(esEdicion ? 'Editar día' : 'Agregar día'),
-              content: DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Día de la semana',
-                  border: OutlineInputBorder(),
-                ),
-                value: diaSeleccionado,
-                items: diasDisponibles.map((dia) {
-                  return DropdownMenuItem<String>(
-                    value: dia,
-                    child: Text(dia),
-                  );
-                }).toList(),
-                onChanged: (value) {
+        return AlertDialog(
+          title: Text(esEdicion ? 'Editar sesión' : 'Agregar sesión'),
+          content: TextField(
+            autofocus: true,
+            decoration: const InputDecoration(
+              labelText: 'Nombre de la sesión',
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (value) => nombreSesion = value,
+            controller: TextEditingController(text: nombreSesion),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                if (nombreSesion.isNotEmpty) {
                   setState(() {
-                    diaSeleccionado = value;
-                  });
-                },
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancelar'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (diaSeleccionado != null) {
-                      setState(() {
-                        if (esEdicion) {
-                          _diasSeleccionados[index] = diaSeleccionado!;
-                        } else {
-                          _diasSeleccionados.add(diaSeleccionado!);
-                        }
-                      });
-                      Navigator.pop(context);
+                    if (esEdicion) {
+                      _sesiones[index] = nombreSesion;
+                    } else {
+                      _sesiones.add(nombreSesion);
                     }
-                  },
-                  child: Text(esEdicion ? 'Guardar' : 'Agregar'),
-                ),
-              ],
-            );
-          },
+                  });
+                  Navigator.pop(context);
+                  _navegarADetallesSesion(context, nombreSesion);
+                }
+              },
+              child: Text(esEdicion ? 'Guardar' : 'Agregar'),
+            ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildSesionItem(String dayName, int index) {
+  Widget _buildSesionItem(String sessionName, int index) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
-        leading: const Icon(Icons.fitness_center, color: Colors.blue),
-        title: Text(dayName),
+        leading: const Icon(Icons.calendar_view_day_rounded, color: Colors.blue),
+        title: Text(sessionName),
+        onTap: () => _navegarADetallesSesion(context, sessionName),
         trailing: PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert),
           onSelected: (value) {
             if (value == 'edit') {
               _indiceEdicion = index;
-              _mostrarDialogoDia(context, index);
+              _mostrarDialogoSesion(context, index);
             } else if (value == 'delete') {
               setState(() {
-                _diasSeleccionados.removeAt(index);
+                _sesiones.removeAt(index);
               });
             }
           },
@@ -201,6 +181,17 @@ class _AdministrarSesionesScreenState extends State<AdministrarSesionesScreen> {
               child: Text('Eliminar', style: TextStyle(color: Colors.red)),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _navegarADetallesSesion(BuildContext context, String nombreSesion) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetallesSesionScreen(
+          nombreSesion: nombreSesion,
         ),
       ),
     );

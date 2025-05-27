@@ -1,28 +1,26 @@
-import 'package:floor/floor.dart';
-
-// lib/models/usuario.dart
 abstract class Usuario {
-  final int? id; // Nullable para inserts
+  final int? localId; // Para SQLite
+  final String? remoteId; // Para Firebase
   final String nombre;
   final String correo;
-  final String contrasena; 
   final String? fotoUrl;
   final String fechaNacimiento;
+  final String contrasena;
+  final DateTime ultimaSincronizacion;
+  final bool sincronizado;
 
   Usuario({
-    this.id,
+    this.localId,
+    this.remoteId,
     required this.nombre,
     required this.correo,
-    required this.contrasena,
     this.fotoUrl,
     required this.fechaNacimiento,
+    required this.contrasena,
+    required this.ultimaSincronizacion,
+    required this.sincronizado,
   });
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'nombre': nombre,
-    'correo': correo,
-    'contrasena': contrasena,
-    'fotoUrl': fotoUrl,
-    'fechaNacimiento': fechaNacimiento,
-  };
+
+  Map<String, dynamic> toLocalMap();
+  Map<String, dynamic> toRemoteMap();
 }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:secondsout/screens/admin_entrenadores_screen.dart';
-
 import 'admin_atletas_screen.dart';
 import 'admin_ejercicios_screen.dart';
 import 'admin_planeacion_screen.dart';
-import 'agregar_ejercicio_screen.dart'; // Si están en la misma carpeta
+import 'agregar_ejercicio_screen.dart';
+import 'perfil_screen.dart';
+
 void main() {
   runApp(const MenuApp());
 }
@@ -30,6 +31,10 @@ class MenuScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Variable para determinar el tipo de usuario (simulado)
+    // En una app real, esto vendría de la autenticación
+    final bool isAthlete = true; // Cambiar a false para ver perfil de entrenador
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Menú'),
@@ -38,11 +43,16 @@ class MenuScreen extends StatelessWidget {
           IconButton(
             icon: const CircleAvatar(
               backgroundImage: NetworkImage(
-                  'https://randomuser.me/api/portraits/men/1.jpg'), // Imagen temporal
+                  'https://randomuser.me/api/portraits/men/1.jpg'),
               radius: 18,
             ),
             onPressed: () {
-              // Acción para el perfil del usuario
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PerfilScreen(isAthlete: true),
+                ),
+              );
             },
           ),
           const SizedBox(width: 10),
@@ -55,7 +65,7 @@ class MenuScreen extends StatelessWidget {
             const SizedBox(height: 20),
             _buildMenuOption(
               context,
-              icon: Icons.people, // Icono provisional para Atletas
+              icon: Icons.people,
               title: 'Atletas',
               onTap: () {
                 Navigator.push(
@@ -83,7 +93,7 @@ class MenuScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildMenuOption(
               context,
-              icon: Icons.group, // Icono provisional para Grupos
+              icon: Icons.group,
               title: 'Grupos',
               onTap: () {
                 // Navegar a pantalla de Grupos
@@ -92,7 +102,7 @@ class MenuScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildMenuOption(
               context,
-              icon: Icons.fitness_center, // Icono provisional para Ejercicios
+              icon: Icons.fitness_center,
               title: 'Ejercicios',
               onTap: () {
                 Navigator.push(
@@ -106,7 +116,7 @@ class MenuScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _buildMenuOption(
               context,
-              icon: Icons.calendar_today, // Icono provisional para Planeaciones
+              icon: Icons.calendar_today,
               title: 'Planeaciones',
               onTap: () {
                 Navigator.push(
