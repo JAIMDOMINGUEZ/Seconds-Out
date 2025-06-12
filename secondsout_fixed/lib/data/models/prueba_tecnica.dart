@@ -1,47 +1,54 @@
-import 'package:floor/floor.dart';
-import 'atleta.dart';
+import 'package:intl/intl.dart';
 
-@Entity(
-  tableName: 'pruebas_tecnicas',
-  foreignKeys: [
-    ForeignKey(
-      childColumns: ['atletaId'],
-      parentColumns: ['id'],
-      entity: Atleta,
-    )
-  ],
-)
 class PruebaTecnica {
-  @PrimaryKey(autoGenerate: true)
-  final int? id;
-
-  final int atletaId;
+  final int? id_prueba;
+  final int idAtleta;
   final DateTime fecha;
-  final String observaciones;
   final int puntajeTotal;
 
   PruebaTecnica({
-    this.id,
-    required this.atletaId,
+    this.id_prueba,
+    required this.idAtleta,
     required this.fecha,
-    required this.observaciones,
     required this.puntajeTotal,
   });
 
-  // Firebase
-  factory PruebaTecnica.fromJson(Map<String, dynamic> json) => PruebaTecnica(
-        id: json['id'],
-        atletaId: json['atletaId'],
-        fecha: DateTime.parse(json['fecha']),
-        observaciones: json['observaciones'],
-        puntajeTotal: json['puntajeTotal'],
-      );
+  // Métodos para conversión desde/hacia Map (para SQLite)
+  factory PruebaTecnica.fromMap(Map<String, dynamic> map) {
+    return PruebaTecnica(
+      id_prueba: map['id_prueba'],
+      idAtleta: map['id_atleta'],
+      fecha: DateTime.parse(map['fecha']),
+      puntajeTotal: map['puntajeTotal'],
+    );
+  }
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'atletaId': atletaId,
-        'fecha': fecha.toIso8601String(),
-        'observaciones': observaciones,
-        'puntajeTotal': puntajeTotal,
-      };
+  Map<String, dynamic> toMap() {
+    return {
+      if (id_prueba != null) 'id_prueba': id_prueba,
+      'id_atleta': idAtleta,
+      'fecha': fecha.toIso8601String(),
+      'puntajeTotal': puntajeTotal,
+    };
+  }
+
+  // Método para formatear la fecha
+  String formatearFecha() {
+    return DateFormat('dd/MM/yy').format(fecha);
+  }
+
+  // Método para clonar con nuevos valores
+  PruebaTecnica copyWith({
+    int? id_prueba,
+    int? idAtleta,
+    DateTime? fecha,
+    int? puntajeTotal,
+  }) {
+    return PruebaTecnica(
+      id_prueba: id_prueba ?? this.id_prueba,
+      idAtleta: idAtleta ?? this.idAtleta,
+      fecha: fecha ?? this.fecha,
+      puntajeTotal: puntajeTotal ?? this.puntajeTotal,
+    );
+  }
 }

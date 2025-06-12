@@ -41,6 +41,7 @@ class _EditarMedidaAntropometricaScreenState extends State<EditarMedidaAntropome
 
   void _cargarDatosExistente() {
     if (widget.medidaExistente != null) {
+
       _pesoController.text = _numberFormat.format(widget.medidaExistente!['peso'] ?? 0.0);
       _tallaController.text = _numberFormat.format(widget.medidaExistente!['talla'] ?? 0.0);
       _somatotipoController.text = widget.medidaExistente!['somatotipo'] ?? '';
@@ -108,8 +109,11 @@ class _EditarMedidaAntropometricaScreenState extends State<EditarMedidaAntropome
   }
 
   void _guardarMedidas() {
+
     if (_formKey.currentState!.validate()) {
       final medidas = {
+        'id_medida': widget.medidaExistente['id_medida'],
+        'id_atleta': widget.medidaExistente['id_atleta'],  // <--- Agregar este campo
         'peso': double.tryParse(_pesoController.text.replaceAll(',', '.')) ?? 0.0,
         'talla': double.tryParse(_tallaController.text.replaceAll(',', '.')) ?? 0.0,
         'somatotipo': _somatotipoController.text,
@@ -122,6 +126,7 @@ class _EditarMedidaAntropometricaScreenState extends State<EditarMedidaAntropome
         'p_oseo': double.tryParse(_pOseoController.text.replaceAll(',', '.')) ?? 0.0,
         'fecha': _fecha.toIso8601String(),
       };
+
 
       widget.onGuardar(medidas);
       Navigator.pop(context);

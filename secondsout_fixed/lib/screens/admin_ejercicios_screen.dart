@@ -30,6 +30,9 @@ class _AdminEjerciciosScreenState extends State<AdminEjerciciosScreen> {
       appBar: AppBar(
         title: const Text('Administrar Ejercicios'),
         centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 4,
+        foregroundColor: Colors.black, // texto y iconos blancos
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

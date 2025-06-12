@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'admin_sesion_screen.dart'; // Asegúrate de tener esta pantalla creada
+import 'package:provider/provider.dart';
+import 'admin_sesion_screen.dart';
+import '../viewmodels/admin_semana_view_model.dart';
+import '../data/models/semana.dart';
 
 class AdminSemanaScreen extends StatefulWidget {
   final String nombreMesociclo;
   final DateTime fechaInicioMesociclo;
   final DateTime fechaFinMesociclo;
+  final int idPlaneacion;
 
   const AdminSemanaScreen({
     super.key,
     required this.nombreMesociclo,
     required this.fechaInicioMesociclo,
     required this.fechaFinMesociclo,
+    required this.idPlaneacion,
   });
 
   @override
@@ -19,7 +24,6 @@ class AdminSemanaScreen extends StatefulWidget {
 }
 
 class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
-  final List<Map<String, dynamic>> _semanas = [];
   final List<Color> _coloresDisponibles = [
     Colors.blue.shade100,
     Colors.green.shade100,
@@ -29,19 +33,23 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
     Colors.teal.shade100,
   ];
 
-  Color _getRandomColor() {
-    _coloresDisponibles.shuffle();
-    return _coloresDisponibles.first;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<SemanaViewModel>().cargarSemanas(widget.idPlaneacion);
+    });
   }
 
-  void _irAAdministrarSesion(Map<String, dynamic> semana) {
+  void _irAAdministrarSesion(Semana semana) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AdministrarSesionesScreen(
-          nombreSemana: semana['nombre'],
-          fechaInicio: semana['fechaInicio'], // Esto es DateTime pero se espera String
-          fechaFin: semana['fechaFin'], // Esto es DateTime pero se espera String
+          idSemana: semana.id_semana!,
+          nombreSemana: semana.nombre,
+          fechaInicio: semana.fechaInicio,
+          fechaFin: semana.fechaFin,
         ),
       ),
     );
@@ -49,9 +57,11 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<SemanaViewModel>();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Semanas - ${widget.nombreMesociclo}'),
+        title: const Text('Administrar Semanas'),
         centerTitle: true,
       ),
       body: Padding(
@@ -61,7 +71,9 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
             // Info del mesociclo
             Card(
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
@@ -71,8 +83,13 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(widget.nombreMesociclo,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(
+                      widget.nombreMesociclo,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       '${DateFormat('dd/MM/yyyy').format(widget.fechaInicioMesociclo)} al ${DateFormat('dd/MM/yyyy').format(widget.fechaFinMesociclo)}',
@@ -84,70 +101,45 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Lista de semanas
-            Expanded(
-              child: ListView.builder(
-                itemCount: _semanas.length,
-                itemBuilder: (context, index) {
-                  final semana = _semanas[index];
-                  final fechaInicio = semana['fechaInicio'] as DateTime;
-                  final fechaFin = semana['fechaFin'] as DateTime;
-                  final dateRange =
-                      '${DateFormat('dd/MM/yyyy').format(fechaInicio)} al ${DateFormat('dd/MM/yyyy').format(fechaFin)}';
+            // Loading and error states
+            if (viewModel.isLoading)
+              const Expanded(child: Center(child: CircularProgressIndicator()))
+            else if (viewModel.errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  viewModel.errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              )
+            else if (viewModel.semanas.isEmpty)
+                const Expanded(
+                  child: Center(
+                    child: Text('No hay semanas registradas'),
+                  ),
+                )
+              else
+              // List of weeks
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: viewModel.semanas.length,
+                    itemBuilder: (context, index) {
+                      final semana = viewModel.semanas[index];
+                      return _buildSemanaCard(semana, index);
+                    },
+                  ),
+                ),
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: GestureDetector(
-                      onTap: () => _irAAdministrarSesion(semana),
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: semana['color'] as Color,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            title: Text(semana['nombre'] as String,
-                                style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text(dateRange),
-                            trailing: PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert),
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  _editarSemana(context, index);
-                                } else if (value == 'delete') {
-                                  _eliminarSemana(context, index);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem<String>(
-                                  value: 'edit',
-                                  child: Text('Editar'),
-                                ),
-                                const PopupMenuItem<String>(
-                                  value: 'delete',
-                                  child: Text('Eliminar', style: TextStyle(color: Colors.red)),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // Botón agregar semana
+            // Add week button
             ElevatedButton.icon(
               icon: const Icon(Icons.add),
               label: const Text('Agregar Semana'),
               onPressed: () => _mostrarDialogoAgregarSemana(context),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
               ),
             ),
           ],
@@ -156,8 +148,62 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
     );
   }
 
+  Widget _buildSemanaCard(Semana semana, int index) {
+    final dateRange =
+        '${DateFormat('dd/MM/yyyy').format(semana.fechaInicio)} al ${DateFormat('dd/MM/yyyy').format(semana.fechaFin)}';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: GestureDetector(
+        onTap: () => _irAAdministrarSesion(semana),
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              color: _coloresDisponibles[index % _coloresDisponibles.length],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              title: Text(
+                semana.nombre,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(dateRange),
+              trailing: PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert),
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    _editarSemana(context, semana);
+                  } else if (value == 'delete') {
+                    _eliminarSemana(context, semana);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem<String>(
+                    value: 'edit',
+                    child: Text('Editar'),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'delete',
+                    child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _mostrarDialogoAgregarSemana(BuildContext context) {
-    final nombreController = TextEditingController(text: 'Semana ${_semanas.length + 1}');
+    final viewModel = context.read<SemanaViewModel>();
+    final nombreController = TextEditingController(
+      text: 'Semana ${viewModel.semanas.length + 1}',
+    );
     DateTime? fechaInicio;
     DateTime? fechaFin;
 
@@ -167,27 +213,34 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: const Text('Nueva Semana'),
+              backgroundColor: Colors.white,
+              title: const Text('Nueva Semana', style: TextStyle(color: Colors.black)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextFormField(
                       controller: nombreController,
+                      style: const TextStyle(color: Colors.black),
                       decoration: const InputDecoration(
                         labelText: 'Nombre de la semana',
+                        labelStyle: TextStyle(color: Colors.black87),
                         border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     ListTile(
-                      title: const Text('Fecha de inicio'),
+                      title: const Text('Fecha de inicio', style: TextStyle(color: Colors.black)),
                       subtitle: Text(
                         fechaInicio == null
                             ? 'Seleccionar fecha'
                             : DateFormat('dd/MM/yyyy').format(fechaInicio!),
+                        style: const TextStyle(color: Colors.black54),
                       ),
-                      trailing: const Icon(Icons.calendar_today),
+                      trailing: const Icon(Icons.calendar_today, color: Colors.black),
                       onTap: () async {
                         final pickedDate = await showDatePicker(
                           context: context,
@@ -207,17 +260,20 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
                     ),
                     const SizedBox(height: 8),
                     ListTile(
-                      title: const Text('Fecha de fin'),
+                      title: const Text('Fecha de fin', style: TextStyle(color: Colors.black)),
                       subtitle: Text(
                         fechaFin == null
                             ? 'Seleccionar fecha'
                             : DateFormat('dd/MM/yyyy').format(fechaFin!),
+                        style: const TextStyle(color: Colors.black54),
                       ),
-                      trailing: const Icon(Icons.calendar_today),
+                      trailing: const Icon(Icons.calendar_today, color: Colors.black),
                       onTap: () async {
                         if (fechaInicio == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Primero selecciona la fecha de inicio')),
+                            const SnackBar(
+                              content: Text('Primero selecciona la fecha de inicio'),
+                            ),
                           );
                           return;
                         }
@@ -228,9 +284,7 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
                           lastDate: widget.fechaFinMesociclo,
                         );
                         if (pickedDate != null) {
-                          setStateDialog(() {
-                            fechaFin = pickedDate;
-                          });
+                          setStateDialog(() => fechaFin = pickedDate);
                         }
                       },
                     ),
@@ -238,9 +292,12 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                ),
+                TextButton(
+                  onPressed: () async {
                     if (nombreController.text.isEmpty ||
                         fechaInicio == null ||
                         fechaFin == null ||
@@ -248,31 +305,27 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
                         fechaInicio!.isBefore(widget.fechaInicioMesociclo) ||
                         fechaFin!.isAfter(widget.fechaFinMesociclo)) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Datos inválidos o incompletos')),
+                        const SnackBar(
+                          content: Text('Datos inválidos o incompletos'),
+                        ),
                       );
                       return;
                     }
 
-                    final nuevaSemana = {
-                      'nombre': nombreController.text,
-                      'fechaInicio': fechaInicio!,
-                      'fechaFin': fechaFin!,
-                      'color': _getRandomColor(),
-                    };
-
-                    setState(() {
-                      _semanas.add(nuevaSemana);
-                    });
-
-                    Navigator.pop(context);
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Semana agregada')),
+                    final nuevaSemana = Semana(
+                      id_planeacion: widget.idPlaneacion,
+                      nombre: nombreController.text,
+                      fechaInicio: fechaInicio!,
+                      fechaFin: fechaFin!,
                     );
 
-                    _irAAdministrarSesion(nuevaSemana);
+                    final success = await viewModel.registrarSemana(nuevaSemana);
+                    await viewModel.cargarSemanas(widget.idPlaneacion);
+                    if (success && mounted) {
+                      Navigator.pop(context);
+                    }
                   },
-                  child: const Text('Agregar'),
+                  child: const Text('Agregar', style: TextStyle(color: Colors.black)),
                 ),
               ],
             );
@@ -282,11 +335,11 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
     );
   }
 
-  void _editarSemana(BuildContext context, int index) {
-    final semana = _semanas[index];
-    final nombreController = TextEditingController(text: semana['nombre'] as String);
-    DateTime fechaInicio = semana['fechaInicio'] as DateTime;
-    DateTime fechaFin = semana['fechaFin'] as DateTime;
+  void _editarSemana(BuildContext context, Semana semana) {
+    final viewModel = context.read<SemanaViewModel>();
+    final nombreController = TextEditingController(text: semana.nombre);
+    DateTime fechaInicio = semana.fechaInicio;
+    DateTime fechaFin = semana.fechaFin;
 
     showDialog(
       context: context,
@@ -294,23 +347,32 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: const Text('Editar Semana'),
+              backgroundColor: Colors.white,
+              title: const Text('Editar Semana', style: TextStyle(color: Colors.black)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextFormField(
                       controller: nombreController,
+                      style: const TextStyle(color: Colors.black),
                       decoration: const InputDecoration(
                         labelText: 'Nombre de la semana',
+                        labelStyle: TextStyle(color: Colors.black87),
                         border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     ListTile(
-                      title: const Text('Fecha de inicio'),
-                      subtitle: Text(DateFormat('dd/MM/yyyy').format(fechaInicio)),
-                      trailing: const Icon(Icons.calendar_today),
+                      title: const Text('Fecha de inicio', style: TextStyle(color: Colors.black)),
+                      subtitle: Text(
+                        DateFormat('dd/MM/yyyy').format(fechaInicio),
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                      trailing: const Icon(Icons.calendar_today, color: Colors.black),
                       onTap: () async {
                         final pickedDate = await showDatePicker(
                           context: context,
@@ -330,9 +392,12 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
                     ),
                     const SizedBox(height: 8),
                     ListTile(
-                      title: const Text('Fecha de fin'),
-                      subtitle: Text(DateFormat('dd/MM/yyyy').format(fechaFin)),
-                      trailing: const Icon(Icons.calendar_today),
+                      title: const Text('Fecha de fin', style: TextStyle(color: Colors.black)),
+                      subtitle: Text(
+                        DateFormat('dd/MM/yyyy').format(fechaFin),
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                      trailing: const Icon(Icons.calendar_today, color: Colors.black),
                       onTap: () async {
                         final pickedDate = await showDatePicker(
                           context: context,
@@ -341,9 +406,7 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
                           lastDate: widget.fechaFinMesociclo,
                         );
                         if (pickedDate != null) {
-                          setStateDialog(() {
-                            fechaFin = pickedDate;
-                          });
+                          setStateDialog(() => fechaFin = pickedDate);
                         }
                       },
                     ),
@@ -351,33 +414,36 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
                 TextButton(
-                  onPressed: () {
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                ),
+                TextButton(
+                  onPressed: () async {
                     if (nombreController.text.isEmpty ||
                         fechaInicio.isBefore(widget.fechaInicioMesociclo) ||
                         fechaFin.isAfter(widget.fechaFinMesociclo)) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Fechas inválidas')),
+                        const SnackBar(
+                          content: Text('Fechas inválidas'),
+                        ),
                       );
                       return;
                     }
 
-                    setState(() {
-                      _semanas[index] = {
-                        'nombre': nombreController.text,
-                        'fechaInicio': fechaInicio,
-                        'fechaFin': fechaFin,
-                        'color': semana['color'],
-                      };
-                    });
-
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Semana actualizada')),
+                    final semanaActualizada = semana.copyWith(
+                      nombre: nombreController.text,
+                      fechaInicio: fechaInicio,
+                      fechaFin: fechaFin,
                     );
+
+                    final success = await viewModel.actualizarSemana(semanaActualizada);
+                    await viewModel.cargarSemanas(widget.idPlaneacion);
+                    if (success && mounted) {
+                      Navigator.pop(context);
+                    }
                   },
-                  child: const Text('Guardar'),
+                  child: const Text('Guardar', style: TextStyle(color: Colors.black)),
                 ),
               ],
             );
@@ -387,25 +453,32 @@ class _AdminSemanaScreenState extends State<AdminSemanaScreen> {
     );
   }
 
-  void _eliminarSemana(BuildContext context, int index) {
+
+  void _eliminarSemana(BuildContext context, Semana semana) {
+    final viewModel = context.read<SemanaViewModel>();
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Eliminar Semana'),
         content: const Text('¿Estás seguro de eliminar esta semana?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           TextButton(
-            onPressed: () {
-              setState(() {
-                _semanas.removeAt(index);
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Semana eliminada')),
-              );
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              final success = await viewModel.eliminarSemana(semana.id_semana!);
+              await viewModel.cargarSemanas(widget.idPlaneacion);
+              if (success && mounted) {
+                Navigator.pop(context);
+              }
             },
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Eliminar',
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),

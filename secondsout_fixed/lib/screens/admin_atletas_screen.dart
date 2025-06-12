@@ -65,6 +65,9 @@ class _AdminAtletasScreenState extends State<AdminAtletasScreen> {
       appBar: AppBar(
         title: const Text('Administrar Atletas'),
         centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 4,
+        foregroundColor: Colors.black, // texto y iconos blancos
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

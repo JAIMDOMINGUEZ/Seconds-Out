@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import '../viewmodels/admin_prueba_fisica_view_model.dart';
 import '/data/models/prueba_fisica.dart';
+import '/repositories/prueba_fisica_repository.dart';
+import '/viewmodels/admin_prueba_fisica_view_model.dart';
 
 class PruebaFisicaScreen extends StatefulWidget {
-  final PruebaFisica? pruebaExistente;
-  final Function(PruebaFisica) onGuardar;
+  final int? idPrueba;
 
   const PruebaFisicaScreen({
     super.key,
-    this.pruebaExistente,
-    required this.onGuardar,
+    this.idPrueba,
   });
 
   @override
@@ -17,23 +18,44 @@ class PruebaFisicaScreen extends StatefulWidget {
 
 class _PruebaFisicaScreenState extends State<PruebaFisicaScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  late PruebaFisicaViewModel viewModel;
+
   int _rapidez = 0;
   int _fuerza = 0;
   int _reaccion = 0;
   int _explosividad = 0;
   int _coordinacion = 0;
+  int _resistencia = 0;
 
-  final List<int> _opciones = [0, 1, 2];
+  final List<int> _opciones = List.generate(3, (index) => index); // 0-10
 
   @override
   void initState() {
     super.initState();
-    if (widget.pruebaExistente != null) {
-      _rapidez = widget.pruebaExistente!.rapidez;
-      _fuerza = widget.pruebaExistente!.fuerza;
-      _reaccion = widget.pruebaExistente!.reaccion;
-      _explosividad = widget.pruebaExistente!.explosividad;
-      _coordinacion = widget.pruebaExistente!.coordinacion;
+    // Instanciar viewModel con el repositorio
+    viewModel = PruebaFisicaViewModel(repository: PruebaFisicaRepository());
+  }
+
+  Future<void> _guardarPrueba() async {
+    final prueba = PruebaFisica.conPuntajeCalculado(
+      id_prueba: widget.idPrueba ?? 0,
+      //id_prueba_fisica: null, // null para nueva inserción autogenerada
+      resistencia: _resistencia,
+      rapidez: _rapidez,
+      fuerza: _fuerza,
+      reaccion: _reaccion,
+      explosividad: _explosividad,
+      coordinacion: _coordinacion,
+    );
+
+    final success = await viewModel.guardarPrueba(prueba);
+    if (success) {
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error al guardar')),
+      );
     }
   }
 
@@ -41,66 +63,33 @@ class _PruebaFisicaScreenState extends State<PruebaFisicaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Prueba Física'),
-        centerTitle: true,
+        title: const Text('Prueba física'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icono agregado aquí (centrado)
-              Center(
-                child: Icon(
-                  Icons.fitness_center, // Icono de gimnasio/ejercicio
-                  size: 60,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),
+              const Icon(Icons.fitness_center, size: 90, color: Colors.black),
               const SizedBox(height: 20),
-
-              _buildDropdownItem('Rapidez', _rapidez, (value) {
-                setState(() => _rapidez = value!);
-              }),
-
+              _buildDropdownItem('Resistencia', _resistencia, (v) => setState(() => _resistencia = v!)),
               const SizedBox(height: 20),
-
-              _buildDropdownItem('Fuerza', _fuerza, (value) {
-                setState(() => _fuerza = value!);
-              }),
-
+              _buildDropdownItem('Rapidez', _rapidez, (v) => setState(() => _rapidez = v!)),
               const SizedBox(height: 20),
-
-              _buildDropdownItem('Reacción', _reaccion, (value) {
-                setState(() => _reaccion = value!);
-              }),
-
+              _buildDropdownItem('Fuerza', _fuerza, (v) => setState(() => _fuerza = v!)),
               const SizedBox(height: 20),
-
-              _buildDropdownItem('Explosividad', _explosividad, (value) {
-                setState(() => _explosividad = value!);
-              }),
-
+              _buildDropdownItem('Reacción', _reaccion, (v) => setState(() => _reaccion = v!)),
               const SizedBox(height: 20),
-
-              _buildDropdownItem('Coordinación', _coordinacion, (value) {
-                setState(() => _coordinacion = value!);
-              }),
-
+              _buildDropdownItem('Explosividad', _explosividad, (v) => setState(() => _explosividad = v!)),
+              const SizedBox(height: 20),
+              _buildDropdownItem('Coordinación', _coordinacion, (v) => setState(() => _coordinacion = v!)),
               const SizedBox(height: 40),
-
-              // Botones Guardar y Cancelar
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _guardarPrueba,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
                       child: const Text('Guardar'),
                     ),
                   ),
@@ -108,9 +97,6 @@ class _PruebaFisicaScreenState extends State<PruebaFisicaScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
                       child: const Text('Cancelar'),
                     ),
                   ),
@@ -123,40 +109,27 @@ class _PruebaFisicaScreenState extends State<PruebaFisicaScreen> {
     );
   }
 
-  Widget _buildDropdownItem(String label, int value, Function(int?) onChanged) {
+  Widget _buildDropdownItem(String label, int value, ValueChanged<int?> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(fontSize: 16)),
         DropdownButtonFormField<int>(
           value: value,
-          items: _opciones.map((int value) {
+          items: _opciones.map((v) {
             return DropdownMenuItem<int>(
-              value: value,
-              child: Text(value.toString()),
+              value: v,
+              child: Text('$v'),
             );
           }).toList(),
           onChanged: onChanged,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
+          decoration: const InputDecoration(border: OutlineInputBorder()),
           validator: (value) {
-            if (value == null) return 'Selecciona un valor';
+            if (value == null) return 'Seleccione un valor';
             return null;
           },
         ),
       ],
     );
-  }
-
-  void _guardarPrueba() {
-
-      Navigator.pop(context);
-
   }
 }

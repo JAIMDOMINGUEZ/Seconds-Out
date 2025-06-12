@@ -6,27 +6,27 @@ import 'semana.dart';
 class Sesion {
   @PrimaryKey(autoGenerate: true)
   final int? id_sesion;
-  final int semanaId;
+  final int id_semana;
   final String nombre; // Ej: "Lunes", "Martes"
 
 
   Sesion({
     this.id_sesion,
-    required this.semanaId,
+    required this.id_semana,
     required this.nombre,
 
   });
 
   factory Sesion.fromJson(Map<String, dynamic> json) => Sesion(
     id_sesion: json['id_sesion'] as int?,
-        semanaId: json['semanaId'] as int,
-        nombre: json['dia'] as String,
+    id_semana: json['id_semana'] as int,
+        nombre: json['nombre'] as String,
 
       );
 
   Map<String, dynamic> toJson() => {
         'id_sesion': id_sesion,
-        'semanaId': semanaId,
+        'id_semana': id_semana,
         'nombre': nombre,
 
       };

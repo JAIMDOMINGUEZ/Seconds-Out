@@ -30,16 +30,24 @@ class _AdminMedidasScreenState extends State<AdminMedidasScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    final viewModel = context.read<AdminMedidasViewModel>(); // <-- Esto es lo que falla si el Provider no existe arriba
-    viewModel.inicializar(widget.atletaId); // Usa widget.atletaId
-  }
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final viewModel = Provider.of<AdminMedidasViewModel>(context, listen: false);
 
+    if (widget.atletaId == null) {
+      print('Error: atletaId es nulo en la pantalla');
+      return;
+    }
+
+    if (viewModel.atletaId != widget.atletaId) {
+      viewModel.inicializar(widget.atletaId);
+    }
+  }
+/*
   void _cargarMedidas() {
     final viewModel = Provider.of<AdminMedidasViewModel>(context, listen: false);
     viewModel.cargarMedidas();
-  }
+  }*/
 
   @override
   void dispose() {
@@ -74,17 +82,21 @@ class _AdminMedidasScreenState extends State<AdminMedidasScreen> {
     );
   }
 
-  void _agregarNuevaMedida(AdminMedidasViewModel viewModel) {
-    Navigator.push(
+  void _agregarNuevaMedida(AdminMedidasViewModel viewModel) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MedidaAntropometricaScreen(
-          atletaId: widget.atletaId, // Usa widget.atletaId en lugar de atletaId
+          atletaId: widget.atletaId,
           viewModel: Provider.of<AdminMedidasViewModel>(context, listen: false),
         ),
       ),
     );
+
+    // Recargar después de volver
+    viewModel.cargarMedidas();
   }
+
 
   List<ChartData> _getChartData(List<MedidaAntropometrica> medidas) {
     return medidas.map((medida) {
@@ -207,10 +219,17 @@ class _AdminMedidasScreenState extends State<AdminMedidasScreen> {
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton(
-            child: const Icon(Icons.add),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _agregarNuevaMedida(viewModel),
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text(
+              'Agregar',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.black,
           ),
+
         );
       },
     );
@@ -232,47 +251,53 @@ class _AdminMedidasScreenState extends State<AdminMedidasScreen> {
 
     return RefreshIndicator(
       onRefresh: () => viewModel.cargarMedidas(),
-      child: ListView.builder(
-        itemCount: medidas.length,
-        itemBuilder: (context, index) {
-          final medida = medidas[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: ListTile(
-              leading: const Icon(Icons.assessment, color: Colors.blue),
-              title: Text(
-                DateFormat('dd/MM/yyyy').format(medida.fecha),
-                style: const TextStyle(fontWeight: FontWeight.bold),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 80), // espacio para el FAB
+        child: ListView.builder(
+          itemCount: medidas.length,
+          itemBuilder: (context, index) {
+            final medida = medidas[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ListTile(
+                leading: const Icon(Icons.assessment, color: Colors.blue),
+                title: Text(
+                  DateFormat('dd/MM/yyyy').format(medida.fecha),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Peso: ${medida.peso.toStringAsFixed(2)} kg'),
+                    Text('Talla: ${medida.talla.toStringAsFixed(2)} cm'),
+                    Text('IMC: ${medida.imc.toStringAsFixed(2)}'),
+                    Text('% Graso: ${medida.porcentajeGraso?.toStringAsFixed(2) ?? 'N/A'}'),
+                    Text('% Muscular: ${medida.porcentajeMuscular?.toStringAsFixed(2) ?? 'N/A'}'),
+                    Text('% Óseo: ${medida.porcentajeOseo?.toStringAsFixed(2) ?? 'N/A'}'),
+
+                  ],
+
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () => _editarMedida(medida, viewModel),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _eliminarMedida(medida.idMedida, viewModel),
+                    ),
+                  ],
+                ),
               ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Peso: ${medida.peso.toStringAsFixed(2)} kg'),
-                  Text('Talla: ${medida.talla.toStringAsFixed(2)} cm'),
-                  Text('IMC: ${medida.imc.toStringAsFixed(2)}'),
-                  Text('% Graso: ${medida.porcentajeGraso?.toStringAsFixed(2) ?? 'N/A'}'),
-                  Text('% Muscular: ${medida.porcentajeMuscular?.toStringAsFixed(2) ?? 'N/A'}'),
-                  Text('% Óseo: ${medida.porcentajeOseo?.toStringAsFixed(2) ?? 'N/A'}'),
-                ],
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () => _editarMedida(medida, viewModel),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _eliminarMedida(medida.idMedida, viewModel),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
+
   }
 
   void _editarMedida(MedidaAntropometrica medida, AdminMedidasViewModel viewModel) {
@@ -280,11 +305,22 @@ class _AdminMedidasScreenState extends State<AdminMedidasScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => EditarMedidaAntropometricaScreen(
-          medidaExistente: medida.toLocalMap(), // Convertir a Map para la pantalla de edición
-          onGuardar: (Map<String, dynamic> medidaActualizada) async {
+          medidaExistente: medida.toLocalMapForUpdate(), // convierte objeto a Map
+          onGuardar: (Map<String, dynamic> medidaActualizadaMap) async {
             try {
-              // Convertir el Map de vuelta a MedidaAntropometrica
-              final medidaActualizadaObj = MedidaAntropometrica.fromLocalMap(medidaActualizada);
+              print('Datos recibidos en onGuardar: $medidaActualizadaMap');
+
+              // Validamos que venga id_medida, si no, lo asignamos desde el objeto original
+              if (!medidaActualizadaMap.containsKey('id_medida') || medidaActualizadaMap['id_medida'] == null) {
+                medidaActualizadaMap['id_medida'] = medida.idMedida;
+                print('Se agregó id_medida desde el objeto original: ${medida.idMedida}');
+              }
+
+              final medidaActualizadaObj = MedidaAntropometrica.fromLocalMap(medidaActualizadaMap);
+
+              print('Claves en medidaActualizadaMap: ${medidaActualizadaMap.keys}');
+              print('id_medida en medidaActualizadaObj: ${medidaActualizadaObj.idMedida}');
+
               final success = await viewModel.actualizarMedida(medidaActualizadaObj);
 
               if (success && mounted) {
@@ -304,6 +340,10 @@ class _AdminMedidasScreenState extends State<AdminMedidasScreen> {
       ),
     );
   }
+
+
+
+
 }
 
 class ChartData {

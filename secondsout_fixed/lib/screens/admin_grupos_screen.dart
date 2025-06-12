@@ -28,24 +28,34 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
       appBar: AppBar(
         title: const Text('Administrar Grupos'),
         centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 4,
+        foregroundColor: Colors.black, // texto y iconos blancos
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           children: [
             if (viewModel.isLoading)
-              const LinearProgressIndicator()
+              const LinearProgressIndicator(color: Colors.black)
             else if (viewModel.grupos.isEmpty)
-              const Center(child: Text('No hay grupos registrados.'))
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'No hay grupos registrados.',
+                    style: TextStyle(fontSize: 18, color: Colors.grey[800]),
+                  ),
+                ),
+              )
             else
               Expanded(
-                child: ListView.builder(
+                child: ListView.separated(
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemCount: viewModel.grupos.length,
                   itemBuilder: (context, index) {
                     final grupo = viewModel.grupos[index];
                     return GrupoCard(
                       grupo: grupo,
-                      cantidadMiembros: 1,
                       onEdit: () => _showEditDialog(context, grupo),
                       onDelete: () => _showDeleteDialog(context, grupo),
                       onTap: () {
@@ -60,26 +70,29 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
                   },
                 ),
               ),
+            const SizedBox(height: 12),
             _buildAddButton(context),
           ],
         ),
       ),
+      backgroundColor: Colors.white,
     );
   }
 
   Widget _buildAddButton(BuildContext context) {
     final viewModel = context.read<GrupoViewModel>();
-    return Center(
-      child: ElevatedButton.icon(
-        icon: const Icon(Icons.add),
-        label: const Text('Agregar Grupo'),
-        onPressed: () => _showAddDialog(context, viewModel),
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
+    return ElevatedButton.icon(
+      icon: const Icon(Icons.group_add_rounded),
+      label: const Text('Agregar Grupo'),
+      onPressed: () => _showAddDialog(context, viewModel),
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white, backgroundColor: Colors.black,
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
         ),
+        elevation: 6,
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -93,7 +106,8 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Nuevo Grupo'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text('Nuevo Grupo', style: TextStyle(fontWeight: FontWeight.bold)),
           content: Form(
             key: _formKey,
             child: SingleChildScrollView(
@@ -105,6 +119,7 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Nombre del grupo',
                       border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.group),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -119,6 +134,7 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Capacidad máxima',
                       border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.format_list_numbered),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -138,9 +154,21 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black, // texto negro para cancelar
+              ),
               child: const Text('Cancelar'),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black, // fondo negro para agregar
+                foregroundColor: Colors.white,  // texto blanco
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 4,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
                   final nuevoGrupo = Grupo(
@@ -173,7 +201,8 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Editar Grupo'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: const Text('Editar Grupo', style: TextStyle(fontWeight: FontWeight.bold)),
           content: Form(
             key: _formKey,
             child: SingleChildScrollView(
@@ -185,6 +214,7 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Nombre del grupo',
                       border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.group),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -199,6 +229,7 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
                     decoration: const InputDecoration(
                       labelText: 'Capacidad máxima',
                       border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.format_list_numbered),
                     ),
                     keyboardType: TextInputType.number,
                     validator: (value) {
@@ -218,26 +249,41 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black, // texto negro para cancelar
+              ),
               child: const Text('Cancelar'),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black, // fondo negro para agregar
+                foregroundColor: Colors.white,  // texto blanco
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 4,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  final grupoActualizado = grupo.copyWith(
+                  final grupoEditado = Grupo(
+                    id_grupo: grupo.id_grupo,  // MANTENER EL ID ORIGINAL
                     nombre: nombreController.text,
                     capacidadMaxima: int.parse(capacidadController.text),
                   );
 
                   Navigator.pop(context);
-                  viewModel.actualizarGrupo(grupoActualizado);
+                  viewModel.actualizarGrupo(grupoEditado);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Grupo actualizado')),
                   );
                 }
               },
-              child: const Text('Guardar'),
+
+              child: const Text('Agregar'),
             ),
           ],
+
         );
       },
     );
@@ -248,14 +294,19 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Eliminar Grupo'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: const Text('Eliminar Grupo', style: TextStyle(fontWeight: FontWeight.bold)),
         content: Text('¿Estás seguro de eliminar el grupo "${grupo.nombre}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancelar'),
           ),
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
             onPressed: () {
               viewModel.eliminarGrupo(grupo.id_grupo!);
               Navigator.pop(context);
@@ -263,7 +314,7 @@ class _AdminGruposScreenState extends State<AdminGruposScreen> {
                 const SnackBar(content: Text('Grupo eliminado')),
               );
             },
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+            child: const Text('Eliminar'),
           ),
         ],
       ),
@@ -276,63 +327,64 @@ class GrupoCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback onTap;
-  final int cantidadMiembros;
+
   const GrupoCard({
     super.key,
     required this.grupo,
     required this.onEdit,
     required this.onDelete,
     required this.onTap,
-    required this.cantidadMiembros,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 2,
+      color: Colors.white,
+      elevation: 3,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Colors.black12),
       ),
+      shadowColor: Colors.black26,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         onTap: onTap,
+        splashColor: Colors.black12,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           child: Row(
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      grupo.nombre,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                  ],
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: Colors.black12,
+                child: const Icon(
+                  Icons.group,
+                  color: Colors.black87,
+                  size: 30,
                 ),
               ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert),
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    onEdit();
-                  } else if (value == 'delete') {
-                    onDelete();
-                  }
-                },
-                itemBuilder: (BuildContext context) => [
-                  const PopupMenuItem<String>(
-                    value: 'edit',
-                    child: Text('Editar'),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Text(
+                  grupo.nombre,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
                   ),
-                  const PopupMenuItem<String>(
-                    value: 'delete',
-                    child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+                ),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Editar',
+                    icon: const Icon(Icons.edit, color: Colors.black87),
+                    onPressed: onEdit,
+                  ),
+                  IconButton(
+                    tooltip: 'Eliminar',
+                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                    onPressed: onDelete,
                   ),
                 ],
               ),

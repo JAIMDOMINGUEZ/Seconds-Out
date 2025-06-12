@@ -8,49 +8,81 @@ class MedidasRepository {
   MedidasRepository(this._database);
 
   Future<List<MedidaAntropometrica>> obtenerMedidas() async {
+    //print('Obteniendo todas las medidas antropométricas...');
     final List<Map<String, dynamic>> maps = await _database.query(
       _tableName,
       orderBy: 'fecha DESC',
     );
+    //print('Cantidad de medidas obtenidas: ${maps.length}');
     return maps.map((map) => MedidaAntropometrica.fromLocalMap(map)).toList();
   }
 
   Future<int> insertarMedida(MedidaAntropometrica medida) async {
-    return await _database.insert(_tableName, medida.toLocalMap());
+    print('Insertando medida: ${medida.toLocalMap()}');
+    final id = await _database.insert(_tableName, medida.toLocalMap());
+    print('Medida insertada con id: $id');
+    return id;
   }
 
   Future<int> actualizarMedida(MedidaAntropometrica medida) async {
-    return await _database.update(
+    print('Actualizando medida id: ${medida.idMedida}, datos: ${medida.toLocalMapForUpdate()}');
+    final count = await _database.update(
       _tableName,
-      medida.toLocalMap(),
-      where: 'idMedida = ?',
+      medida.toLocalMapForUpdate(),
+      where: 'id_medida = ?',
       whereArgs: [medida.idMedida],
     );
+    print('Cantidad de registros actualizados: $count');
+    return count;
   }
 
+
+
   Future<int> eliminarMedida(int idMedida) async {
-    return await _database.delete(
+    print('Eliminando medida con id: $idMedida');
+    final count = await _database.delete(
       _tableName,
-      where: 'idMedida = ?',
+      where: 'id_medida = ?',
       whereArgs: [idMedida],
     );
+    print('Cantidad de registros eliminados: $count');
+    return count;
   }
+
   Future<List<MedidaAntropometrica>> obtenerMedidasPorAtleta(int atletaId) async {
+    print('Obteniendo medidas para atleta id: $atletaId');
     final maps = await _database.query(
-      'medidas_antropometricas',
-      where: 'idAtleta = ?',
+      _tableName,
+      where: 'id_atleta = ?',
       whereArgs: [atletaId],
     );
+    print('Medidas obtenidas para atleta $atletaId: ${maps.length}');
     return maps.map((map) => MedidaAntropometrica.fromLocalMap(map)).toList();
   }
+
   Future<MedidaAntropometrica?> obtenerMedidaMasReciente(int atletaId) async {
-    final maps = await _database.query(
-      'medidas_antropometricas',
-      where: 'idAtleta = ?',
-      whereArgs: [atletaId],
-      orderBy: 'fecha DESC',
-      limit: 1,
-    );
-    return maps.isNotEmpty ? MedidaAntropometrica.fromLocalMap(maps.first) : null;
+    try {
+      print('Obteniendo medida más reciente para atleta id: $atletaId');
+      final maps = await _database.query(
+        _tableName,
+        where: 'id_atleta = ?',
+        whereArgs: [atletaId],
+        orderBy: 'fecha DESC',
+        limit: 1,
+      );
+
+      if (maps.isNotEmpty) {
+        final map = maps.first;
+        // Verifica valores nulos antes de crear el objeto
+        if (map['id_medida'] == null) {
+          throw Exception('El campo id_medida es nulo en la base de datos');
+        }
+        return MedidaAntropometrica.fromLocalMap(map);
+      }
+      return null;
+    } catch (e) {
+      print('Error en obtenerMedidaMasReciente: $e');
+      rethrow;
+    }
   }
 }

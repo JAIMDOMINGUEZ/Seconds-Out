@@ -24,10 +24,12 @@ class AdminMedidasViewModel extends ChangeNotifier {
   void inicializar(int atletaId) {
     _atletaId = atletaId;
     cargarMedidas();
-    obtenerMedidaMasReciente();
+    //obtenerMedidaMasReciente();
+
   }
 
   Future<void> cargarMedidas() async {
+
     if (_atletaId == null) return;
 
     _isLoading = true;
@@ -35,9 +37,13 @@ class AdminMedidasViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
+
       _medidas = await _repository.obtenerMedidasPorAtleta(_atletaId!);
+
+
     } catch (e) {
       _error = 'Error cargando medidas: $e';
+
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -60,6 +66,7 @@ class AdminMedidasViewModel extends ChangeNotifier {
   }
 
   Future<bool> actualizarMedida(MedidaAntropometrica medida) async {
+
     try {
       _isLoading = true;
       notifyListeners();
@@ -69,6 +76,7 @@ class AdminMedidasViewModel extends ChangeNotifier {
       return true;
     } catch (e) {
       _error = 'Error actualizando medida: $e';
+      print('Error actualizando medida: $e');
       notifyListeners();
       return false;
     }
@@ -90,16 +98,23 @@ class AdminMedidasViewModel extends ChangeNotifier {
   }
 
   Future<void> obtenerMedidaMasReciente() async {
-    if (_atletaId == null) return;
+    if (_atletaId == null) {
+      print('Error: atletaId es nulo al obtener medida más reciente');
+      return;
+    }
 
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _medidaMasReciente = await _repository.obtenerMedidaMasReciente(_atletaId!); // Asegúrate que el método reciba el parámetro
+      _medidaMasReciente = await _repository.obtenerMedidaMasReciente(_atletaId!);
+      if (_medidaMasReciente == null) {
+        print('No se encontró medida reciente para atleta $_atletaId');
+      }
     } catch (e) {
       _error = 'Error obteniendo medida más reciente: $e';
+      print('Error al obtener medida reciente: $e');
       _medidaMasReciente = null;
     } finally {
       _isLoading = false;

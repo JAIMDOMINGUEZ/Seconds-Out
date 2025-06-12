@@ -10,10 +10,18 @@ class EditarEjercicioScreen extends StatefulWidget {
 }
 
 class _EditarEjercicioScreenState extends State<EditarEjercicioScreen> {
-  late final _formKey = GlobalKey<FormState>();
-  late final _nombreController = TextEditingController(text: widget.ejercicio['nombre']);
-  late final _descripcionController = TextEditingController(text: widget.ejercicio['descripcion']);
-  late String _tipoSeleccionado = widget.ejercicio['tipo'];
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nombreController;
+  late final TextEditingController _descripcionController;
+  late String _tipoSeleccionado;
+
+  @override
+  void initState() {
+    super.initState();
+    _nombreController = TextEditingController(text: widget.ejercicio['nombre']);
+    _descripcionController = TextEditingController(text: widget.ejercicio['descripcion']);
+    _tipoSeleccionado = widget.ejercicio['tipo'];
+  }
 
   @override
   void dispose() {
@@ -22,83 +30,104 @@ class _EditarEjercicioScreenState extends State<EditarEjercicioScreen> {
     super.dispose();
   }
 
+  void _guardarEjercicio() {
+    if (_formKey.currentState!.validate()) {
+      final ejercicioActualizado = {
+        'id_ejercicio': widget.ejercicio['id_ejercicio'],
+        'nombre': _nombreController.text,
+        'tipo': _tipoSeleccionado,
+        'descripcion': _descripcionController.text,
+      };
+      Navigator.pop(context, ejercicioActualizado);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Editar Ejercicio'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                // Asegura que el ID original se mantenga
-                final ejercicioActualizado = {
-                  'id_ejercicio': widget.ejercicio['id_ejercicio'],
-                  'nombre': _nombreController.text,
-                  'tipo': _tipoSeleccionado,
-                  'descripcion': _descripcionController.text,
-                };
-                Navigator.pop(context, ejercicioActualizado);
-              }
-            },
+            tooltip: 'Guardar cambios',
+            onPressed: _guardarEjercicio,
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _nombreController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre del ejercicio',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese el nombre';
-                  }
-                  return null;
-                },
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  // Campo Nombre
+                  TextFormField(
+                    controller: _nombreController,
+                    decoration: InputDecoration(
+                      labelText: 'Nombre del ejercicio',
+                      floatingLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.text_fields),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese el nombre';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Tipo de ejercicio
+                  DropdownButtonFormField<String>(
+                    value: _tipoSeleccionado,
+                    decoration: InputDecoration(
+                      labelText: 'Tipo de ejercicio',
+                      floatingLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.category),
+                    ),
+                    items: ['Boxeo', 'Acondicionamiento', 'Técnica', 'Fuerza']
+                        .map((tipo) => DropdownMenuItem(
+                      value: tipo,
+                      child: Text(tipo),
+                    ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _tipoSeleccionado = value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Descripción
+                  TextFormField(
+                    controller: _descripcionController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Descripción',
+                      floatingLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.description),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese una descripción';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _tipoSeleccionado,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo de ejercicio',
-                  border: OutlineInputBorder(),
-                ),
-                items: ['Boxeo', 'Acondicionamiento', 'Técnica', 'Fuerza']
-                    .map((tipo) => DropdownMenuItem(
-                  value: tipo,
-                  child: Text(tipo),
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _tipoSeleccionado = value!;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descripcionController,
-                decoration: const InputDecoration(
-                  labelText: 'Descripción',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese una descripción';
-                  }
-                  return null;
-                },
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart' show Provider;
+import 'package:provider/provider.dart';
 
 import '../data/models/ejercicio.dart';
 import '../viewmodels/admin_ejercicios_view_model.dart';
@@ -30,89 +30,123 @@ class _RegistrarEjercicioScreenState extends State<RegistrarEjercicioScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registrar Nuevo Ejercicio'),
+        title: const Text('Registrar Ejercicio'),
+        centerTitle: true,
+        leading: const Icon(Icons.fitness_center),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _nombreController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre del ejercicio',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese el nombre';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _tipoSeleccionado,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo de ejercicio',
-                  border: OutlineInputBorder(),
-                ),
-                items: ['Boxeo', 'Acondicionamiento', 'Técnica', 'Fuerza']
-                    .map((tipo) => DropdownMenuItem(
-                  value: tipo,
-                  child: Text(tipo),
-                ))
-                    .toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _tipoSeleccionado = value!;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descripcionController,
-                decoration: const InputDecoration(
-                  labelText: 'Descripción',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese una descripción';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    final nuevoEjercicio = Ejercicio(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  // Campo Nombre
+                  TextFormField(
+                    controller: _nombreController,
+                    decoration: InputDecoration(
+                      labelText: 'Nombre del ejercicio',
+                      floatingLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.text_fields),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese el nombre';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
 
-                      nombre: _nombreController.text,
-                      tipo: _tipoSeleccionado,
-                      descripcion: _descripcionController.text,
-                    );
+                  // Dropdown Tipo
+                  DropdownButtonFormField<String>(
+                    value: _tipoSeleccionado,
+                    decoration: InputDecoration(
+                      labelText: 'Tipo de ejercicio',
+                      floatingLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.category),
+                    ),
+                    items: ['Boxeo', 'Acondicionamiento', 'Fuerza']
+                        .map((tipo) => DropdownMenuItem(
+                      value: tipo,
+                      child: Text(tipo),
+                    ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _tipoSeleccionado = value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
 
-                    await viewModel.agregarEjercicio(nuevoEjercicio);
+                  // Descripción
+                  TextFormField(
+                    controller: _descripcionController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      labelText: 'Descripción',
+                      floatingLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.description),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor ingrese una descripción';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 30),
 
-                    if (!mounted) return;
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Ejercicio registrado'),
-                        backgroundColor: Colors.green,
+                  // Botón Guardar
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.save),
+                      label: const Text('Guardar Ejercicio'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                    );
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          final nuevoEjercicio = Ejercicio(
+                            nombre: _nombreController.text,
+                            tipo: _tipoSeleccionado,
+                            descripcion: _descripcionController.text,
+                          );
 
-                    Navigator.pop(context, true);
-                  }
-                },
-                child: const Text('Guardar Ejercicio'),
+                          await viewModel.agregarEjercicio(nuevoEjercicio);
+
+                          if (!mounted) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Ejercicio registrado'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+
+                          Navigator.pop(context, true);
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

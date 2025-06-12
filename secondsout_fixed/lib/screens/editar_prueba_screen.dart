@@ -206,6 +206,7 @@ class _EditarPruebasScreenState extends State<EditarPruebasScreen> {
         ),
       );
     } else if (testType == 'Fisica') {
+      /*
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -227,7 +228,7 @@ class _EditarPruebasScreenState extends State<EditarPruebasScreen> {
             },
           ),
         ),
-      );
+      );*/
     } else if (testType == 'Tactica') {
       Navigator.push(
         context,

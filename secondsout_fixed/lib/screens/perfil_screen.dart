@@ -114,7 +114,7 @@ class PerfilScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => AdminPruebasScreen(
                         atletaId: usuario['id'],
-                        nombreAtleta: usuario['nombre'],
+
                       ),
                     ),
                   );

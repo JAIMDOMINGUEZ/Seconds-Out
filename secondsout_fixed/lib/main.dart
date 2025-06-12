@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:secondsout_fixed/repositories/ejercicio_asignado_repository.dart';
 import 'package:secondsout_fixed/repositories/planeacion_repository.dart' show PlaneacionRepository;
 import 'package:secondsout_fixed/screens/admin_medidas_screen.dart' show AdminMedidasScreen;
 import 'package:secondsout_fixed/screens/admin_planeacion_screen.dart';
+import 'package:secondsout_fixed/viewmodels/ejercicio_asignado_view_model.dart';
+import 'package:secondsout_fixed/viewmodels/planeacion_grupo_view_model.dart';
 import 'package:sqflite/sqflite.dart';
 
 // Servicios y repositorios
@@ -13,22 +16,27 @@ import 'repositories/entrenador_repository.dart';
 import 'repositories/grupo_atleta_repository.dart';
 import 'repositories/grupo_repository.dart';
 import 'repositories/medidas_repository.dart';
+import 'repositories/semana_repository.dart';
 import 'repositories/usuario_repository.dart';
+import 'viewmodels/prueba_tecnica_view_model.dart';
+import 'repositories/prueba_tecnica_repository.dart';
 
 // ViewModels
+import 'screens/admin_semana_screen.dart';
 import 'viewmodels/admin_atletas_view_model.dart';
 import 'viewmodels/admin_entrenadores_view_model.dart';
 import 'viewmodels/admin_ejercicios_view_model.dart';
 import 'viewmodels/admin_grupo_view_model.dart';
 import 'viewmodels/admin_medidas_view_model.dart';
 import 'viewmodels/admin_pleaneaciones_view_model.dart';
+import 'viewmodels/admin_semana_view_model.dart';
 import 'viewmodels/grupo_view_model.dart' hide GrupoViewModel;
 
-// Pantallas
+
 import 'screens/login_screen.dart';
 import 'screens/admin_entrenadores_screen.dart';
 import 'screens/admin_atletas_screen.dart';
-// puedes importar aquí el resto de tus screens...
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -105,6 +113,53 @@ void main() async {
               context.read<PlaneacionRepository>(),
             ),
           ),
+          // Change this in your main.dart
+          // Database and repositories first
+          Provider<Database>(create: (_) => database),
+          Provider<SemanaRepository>(
+            create: (context) => SemanaRepository(context.read<Database>()),
+          ),
+
+          // Then view models
+          ChangeNotifierProvider<SemanaViewModel>(
+            create: (context) => SemanaViewModel(
+              context.read<SemanaRepository>(),
+            ),
+          ),
+          //ejercicio asignado
+          Provider<EjercicioAsignadoRepository>(
+            create: (context) => EjercicioAsignadoRepository(context.read<Database>()),
+          ),
+
+          Provider<EjercicioRepository>(
+            create: (context) => EjercicioRepository(context.read<Database>()),
+          ),
+
+          ChangeNotifierProvider(create: (_) => EjercicioAsignadoViewModel(
+            ejercicioAsignadoRepository: EjercicioAsignadoRepository(database),
+            ejercicioRepository: EjercicioRepository(database),
+          )),
+
+
+          Provider<PruebasTecnicasRepository>(
+            create: (context) => PruebasTecnicasRepository(context.read<Database>()),
+          ),
+
+
+          ChangeNotifierProvider(
+            create: (context) => PruebasTecnicasViewModel(
+              context.read<PruebasTecnicasRepository>(),
+            ),
+          ),
+
+          ChangeNotifierProvider(
+            create: (context) => PlaneacionGrupoViewModel(
+              database: context.read<Database>(),
+            ),
+          ),
+
+
+
 
         ],
         child: const MyApp(),
@@ -129,6 +184,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Gestión de Entrenadores',
       debugShowCheckedModeBanner: false,
+
       initialRoute: '/login',
       theme: ThemeData(
         primaryColor: Colors.black,
@@ -163,6 +219,16 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(builder: (_) => const AdminAtletasScreen());
           case '/adminPlaneaciones':
             return MaterialPageRoute(builder: (_) => const AdminPlaneacionScreen());
+          case '/adminSemanas':
+            final args = settings.arguments as Map<String, dynamic>;
+            return MaterialPageRoute(
+              builder: (_) => AdminSemanaScreen(
+                nombreMesociclo: args['nombreMesociclo'],
+                fechaInicioMesociclo: args['fechaInicio'],
+                fechaFinMesociclo: args['fechaFin'],
+                idPlaneacion: args['idPlaneacion'],
+              ),
+            );
         // Agrega tus demás pantallas aquí...
           default:
             return MaterialPageRoute(

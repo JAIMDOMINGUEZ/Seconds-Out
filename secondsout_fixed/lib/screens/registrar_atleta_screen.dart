@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '/viewmodels/admin_atletas_view_model.dart';
 
-
 class RegistrarAtletaScreen extends StatefulWidget {
   const RegistrarAtletaScreen({super.key});
 
@@ -21,7 +20,6 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
   final TextEditingController _confirmPasswordController = TextEditingController();
 
 
-  final ImagePicker _picker = ImagePicker();
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -36,31 +34,6 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
   }
 
 
-
-  Future<void> _mostrarOpcionesFoto() async {
-    await showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Galería'),
-
-              ),
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Cámara'),
-
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -92,87 +65,83 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               const SizedBox(height: 30),
 
               // Foto de perfil
               Center(
                 child: GestureDetector(
 
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CircleAvatar(
-                        radius: 60,
-                        child: Icon(Icons.person, size: 50),
-                        backgroundColor: Colors.white,
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
-
-                          ),
-
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 4,
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundColor: Colors.grey.shade200,
+                      child: const Icon(Icons.person, size: 50, color: Colors.grey),
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
 
               // Campo Nombre
               TextFormField(
                 controller: _nombreController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Nombre Completo',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                  prefixIcon: const Icon(Icons.person),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese el nombre';
-                  }
+                  if (value == null || value.isEmpty) return 'Por favor ingrese el nombre';
                   return null;
                 },
               ),
               const SizedBox(height: 20),
 
-              // Campo Fecha de Nacimiento
+              // Fecha de Nacimiento
               TextFormField(
                 controller: _fechaNacimientoController,
-                decoration: const InputDecoration(
-                  labelText: 'Fecha de Nacimiento',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.calendar_today),
-                ),
                 readOnly: true,
                 onTap: () => _selectDate(context),
+                decoration: InputDecoration(
+                  labelText: 'Fecha de Nacimiento',
+                  prefixIcon: const Icon(Icons.calendar_today),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor seleccione la fecha';
-                  }
+                  if (value == null || value.isEmpty) return 'Por favor seleccione la fecha';
                   return null;
                 },
               ),
               const SizedBox(height: 20),
 
-              // Campo Email
+              // Email
               TextFormField(
                 controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Correo Electrónico',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
-                ),
                 keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Correo Electrónico',
+                  prefixIcon: const Icon(Icons.email),
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese el correo';
-                  }
+                  if (value == null || value.isEmpty) return 'Por favor ingrese el correo';
                   if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                     return 'Ingrese un correo válido';
                   }
@@ -181,58 +150,66 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Campo Contraseña
+              // Contraseña
               TextFormField(
                 controller: _passwordController,
+                obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
-                  border: const OutlineInputBorder(),
                   prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  suffixIcon: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    transitionBuilder: (child, animation) =>
+                        RotationTransition(turns: animation, child: child),
+                    child: IconButton(
+                      key: ValueKey(_obscurePassword),
+                      icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
                   ),
                 ),
-                obscureText: _obscurePassword,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese una contraseña';
-                  }
-                  if (value.length < 8) {
-                    return 'Debe tener al menos 8 caracteres';
-                  }
-                  if (!value.contains(RegExp(r'[A-Z]'))) {
-                    return 'Debe contener una mayúscula';
-                  }
-                  if (!value.contains(RegExp(r'[0-9]'))) {
-                    return 'Debe contener un número';
-                  }
+                  if (value == null || value.isEmpty) return 'Por favor ingrese una contraseña';
+                  if (value.length < 8) return 'Debe tener al menos 8 caracteres';
+                  if (!value.contains(RegExp(r'[A-Z]'))) return 'Debe contener una mayúscula';
+                  if (!value.contains(RegExp(r'[0-9]'))) return 'Debe contener un número';
                   return null;
                 },
               ),
               const SizedBox(height: 20),
 
-              // Confirmar Contraseña
+              // Confirmar contraseña
               TextFormField(
                 controller: _confirmPasswordController,
+                obscureText: _obscureConfirmPassword,
                 decoration: InputDecoration(
                   labelText: 'Confirmar Contraseña',
-                  border: const OutlineInputBorder(),
                   prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () {
-                      setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                      });
-                    },
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  suffixIcon: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    transitionBuilder: (child, animation) =>
+                        RotationTransition(turns: animation, child: child),
+                    child: IconButton(
+                      key: ValueKey(_obscureConfirmPassword),
+                      icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () {
+                        setState(() {
+                          _obscureConfirmPassword = !_obscureConfirmPassword;
+                        });
+                      },
+                    ),
                   ),
                 ),
-                obscureText: _obscureConfirmPassword,
                 validator: (value) {
                   if (value != _passwordController.text) {
                     return 'Las contraseñas no coinciden';
@@ -249,18 +226,14 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
                     child: ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-
-                          // Convertir fecha al formato YYYY-MM-DD
                           final fechaParts = _fechaNacimientoController.text.split('/');
                           final fechaFormatoDB = "${fechaParts[2]}-${fechaParts[1]}-${fechaParts[0]}";
 
                           final success = await viewModel.registrarAtleta(
-
                             nombre: _nombreController.text,
                             correo: _emailController.text,
                             fechaNacimiento: fechaFormatoDB,
                             contrasena: _passwordController.text,
-
                           );
 
                           if (!mounted) return;
@@ -276,7 +249,6 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
                                 duration: const Duration(seconds: 2),
                               ),
                             );
-
                             await Future.delayed(const Duration(seconds: 2));
                             if (!mounted) return;
                             Navigator.pop(context, true);
@@ -291,19 +263,17 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
                           }
                         }
                       },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: Colors.black, // fondo negro
-                        side: const BorderSide(color: Colors.black), // borde negro
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        elevation: 4,
+                        shadowColor: Colors.black54,
                       ),
-
-                      child: const Text(
-                        'REGISTRAR',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
+                      child: const Text('REGISTRAR'),
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -312,10 +282,10 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Colors.black),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        side: const BorderSide(color: Colors.black),
                       ),
                       child: const Text(
                         'CANCELAR',
@@ -332,5 +302,3 @@ class _RegistrarAtletaScreenState extends State<RegistrarAtletaScreen> {
     );
   }
 }
-
-

@@ -14,7 +14,7 @@ import 'editar_prueba_tactica_screen.dart';
 import 'editar_prueba_psicologica_screen.dart';
 import 'editar_prueba_reglas_screen.dart';
 
-
+/*
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -29,15 +29,17 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
+*/
 class AgregarPruebasScreen extends StatefulWidget {
-  const AgregarPruebasScreen({super.key});
+  final int? idPrueba; // puede ser null si es nuevo
+  const AgregarPruebasScreen({super.key,this.idPrueba});
 
   @override
   State<AgregarPruebasScreen> createState() => _AgregarPruebasScreenState();
 }
 
 class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
+
   final List<Map<String, dynamic>> _pruebas = [
     {'tipo': 'Fisica', 'puntaje': 10, 'id': '1'},
     {
@@ -51,30 +53,10 @@ class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
     {'tipo': 'Reglas', 'puntaje': 2, 'id': '5'},
   ];
 
-  DateTime _fechaSeleccionada = DateTime.now();
 
-  Future<void> _seleccionarFecha(BuildContext context) async {
-    final DateTime? fecha = await showDatePicker(
-      context: context,
-      initialDate: _fechaSeleccionada,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (fecha != null && fecha != _fechaSeleccionada) {
-      setState(() {
-        _fechaSeleccionada = fecha;
-      });
-    }
-  }
 
-  void _guardarPruebas() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Pruebas guardadas correctamente'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
+
+
 
   void _showAddTestDialog(BuildContext context) {
     final List<String> testTypes = [
@@ -156,26 +138,15 @@ class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => PruebaFisicaScreen(
-            onGuardar: (nuevaPrueba) {
-              setState(() {
-                _pruebas.add({
-                  'tipo': 'Fisica',
-                  'puntaje': nuevaPrueba.puntajeTotal,
-                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                  'detalles': {
-                    'rapidez': nuevaPrueba.rapidez,
-                    'fuerza': nuevaPrueba.fuerza,
-                    'reaccion': nuevaPrueba.reaccion,
-                    'explosividad': nuevaPrueba.explosividad,
-                    'coordinacion': nuevaPrueba.coordinacion,
-                  },
-                });
-              });
-            },
+            idPrueba: widget.idPrueba,
           ),
         ),
-      );
-    } else if (testType == 'Tactica') {
+      ).then((_) {
+        // Aquí lógica después de que se cierre la pantalla
+        // por ejemplo: recargar datos, mostrar snackbar, etc.
+      });
+    }
+    else if (testType == 'Tactica') {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -261,36 +232,39 @@ class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
 
     switch (tipo) {
       case 'Fisica':
+        /*
         Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EditarPruebaFisicaScreen(
-              pruebaExistente: PruebaFisica(
-                rapidez: detalles['rapidez'] ?? 0,
-                fuerza: detalles['fuerza'] ?? 0,
-                reaccion: detalles['reaccion'] ?? 0,
-                explosividad: detalles['explosividad'] ?? 0,
-                coordinacion: detalles['coordinacion'] ?? 0, pruebaTecnicaId: 1, resistencia: detalles['resistencia'] ?? 0,
-              ),
-              onGuardar: (pruebaActualizada) {
-                setState(() {
-                  _pruebas[index] = {
-                    ..._pruebas[index],
-                    'puntaje': pruebaActualizada.puntajeTotal,
-                    'detalles': {
-                      'rapidez': pruebaActualizada.rapidez,
-                      'fuerza': pruebaActualizada.fuerza,
-                      'reaccion': pruebaActualizada.reaccion,
-                      'explosividad': pruebaActualizada.explosividad,
-                      'coordinacion': pruebaActualizada.coordinacion,
-                      'resistencia': pruebaActualizada.resistencia,
-                    },
-                  };
-                });
+    context,
+    MaterialPageRoute(
+      builder: (context) => EditarPruebaFisicaScreen(
+        idPrueba: widget.idPrueba, // Pasar el idPrueba aquí también
+        pruebaExistente: PruebaFisica(
+          rapidez: detalles['rapidez'] ?? 0,
+          fuerza: detalles['fuerza'] ?? 0,
+          reaccion: detalles['reaccion'] ?? 0,
+          explosividad: detalles['explosividad'] ?? 0,
+          coordinacion: detalles['coordinacion'] ?? 0,
+          pruebaTecnicaId: 1,
+          resistencia: detalles['resistencia'] ?? 0,
+        ),
+        onGuardar: (pruebaActualizada) {
+          setState(() {
+            _pruebas[index] = {
+              ..._pruebas[index],
+              'puntaje': pruebaActualizada.puntajeTotal,
+              'detalles': {
+                'rapidez': pruebaActualizada.rapidez,
+                'fuerza': pruebaActualizada.fuerza,
+                'reaccion': pruebaActualizada.reaccion,
+                'explosividad': pruebaActualizada.explosividad,
+                'coordinacion': pruebaActualizada.coordinacion,
+                'resistencia': pruebaActualizada.resistencia,
               },
-            ),
-          ),
-        );
+            };
+          });
+        },
+      ),
+    ),*/
         break;
 
       case 'Tecnica Detallada':
@@ -316,8 +290,10 @@ class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
         break;
 
       case 'Tactica':
+    /*
         Navigator.push(
           context,
+
           MaterialPageRoute(
             builder: (context) => EditarPruebaTacticaScreen(
               pruebaExistente: PruebaTactica(
@@ -346,10 +322,11 @@ class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
               },
             ),
           ),
-        );
+        );*/
         break;
 
       case 'Psicologica':
+        /*
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -374,10 +351,11 @@ class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
               },
             ),
           ),
-        );
+        );*/
         break;
 
       case 'Reglas':
+        /*
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -400,7 +378,7 @@ class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
               },
             ),
           ),
-        );
+        );*/
         break;
 
       default:
@@ -474,39 +452,16 @@ class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Agregar Pruebas'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _guardarPruebas,
-            tooltip: 'Guardar todas las pruebas',
-          ),
-        ],
+        automaticallyImplyLeading: false, // 🔒 Desactiva la flecha automática
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(), // 🔙 Solo regresa una pantalla
+        ),
       ),
+
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: InkWell(
-              onTap: () => _seleccionarFecha(context),
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Fecha',
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${_fechaSeleccionada.day}/${_fechaSeleccionada.month}/${_fechaSeleccionada.year}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const Icon(Icons.calendar_today, size: 20),
-                  ],
-                ),
-              ),
-            ),
-          ),
+
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(16.0),

@@ -3,27 +3,42 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodels/admin_pleaneaciones_view_model.dart';
+import '../viewmodels/admin_semana_view_model.dart' show SemanaViewModel;
 import '/data/models/planeacion.dart';
 import 'admin_semana_screen.dart';
 
-class AdminPlaneacionScreen extends StatelessWidget {
+class AdminPlaneacionScreen extends StatefulWidget {
   const AdminPlaneacionScreen({super.key});
+
+  @override
+  State<AdminPlaneacionScreen> createState() => _AdminPlaneacionScreenState();
+}
+
+class _AdminPlaneacionScreenState extends State<AdminPlaneacionScreen> {
+  bool _initialLoadDone = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final viewModel = Provider.of<AdminPlaneacionesViewModel>(context, listen: false);
+
+    if (!_initialLoadDone && viewModel.planeaciones.isEmpty && !viewModel.isLoading) {
+      _initialLoadDone = true;
+      viewModel.cargarPlaneaciones();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<AdminPlaneacionesViewModel>(context);
 
-    // Cargar planeaciones una sola vez
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (viewModel.planeaciones.isEmpty && !viewModel.isLoading) {
-        viewModel.cargarPlaneaciones();
-      }
-    });
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Administrar Planeaciones'),
         centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 4,
+        foregroundColor: Colors.black, // texto y iconos blancos
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -53,10 +68,14 @@ class AdminPlaneacionScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => AdminSemanaScreen(
-                              nombreMesociclo: planeacion.nombre,
-                              fechaInicioMesociclo: planeacion.fechaInicio,
-                              fechaFinMesociclo: planeacion.fechaFin,
+                            builder: (context) => ChangeNotifierProvider.value(
+                              value: Provider.of<SemanaViewModel>(context, listen: false),
+                              child: AdminSemanaScreen(
+                                nombreMesociclo: planeacion.nombre,
+                                fechaInicioMesociclo: planeacion.fechaInicio,
+                                fechaFinMesociclo: planeacion.fechaFin,
+                                idPlaneacion: planeacion.id_planeacion!,
+                              ),
                             ),
                           ),
                         );
@@ -112,25 +131,34 @@ class AdminPlaneacionScreen extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: const Text('Nueva Planeación'),
+              backgroundColor: Colors.white,
+              title: const Text('Nueva Planeación', style: TextStyle(color: Colors.black)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextFormField(
                       controller: nombreController,
+                      style: const TextStyle(color: Colors.black),
                       decoration: const InputDecoration(
                         labelText: 'Nombre del mesociclo',
+                        labelStyle: TextStyle(color: Colors.black87),
                         border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     ListTile(
-                      title: const Text('Fecha de inicio'),
-                      subtitle: Text(fechaInicio == null
-                          ? 'Seleccionar fecha'
-                          : DateFormat('dd/MM/yyyy').format(fechaInicio!)),
-                      trailing: const Icon(Icons.calendar_today),
+                      title: const Text('Fecha de inicio', style: TextStyle(color: Colors.black)),
+                      subtitle: Text(
+                        fechaInicio == null
+                            ? 'Seleccionar fecha'
+                            : DateFormat('dd/MM/yyyy').format(fechaInicio!),
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                      trailing: const Icon(Icons.calendar_today, color: Colors.black),
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: context,
@@ -138,17 +166,18 @@ class AdminPlaneacionScreen extends StatelessWidget {
                           firstDate: DateTime(2000),
                           lastDate: DateTime(2100),
                         );
-                        if (picked != null) {
-                          setStateDialog(() => fechaInicio = picked);
-                        }
+                        if (picked != null) setStateDialog(() => fechaInicio = picked);
                       },
                     ),
                     ListTile(
-                      title: const Text('Fecha de fin'),
-                      subtitle: Text(fechaFin == null
-                          ? 'Seleccionar fecha'
-                          : DateFormat('dd/MM/yyyy').format(fechaFin!)),
-                      trailing: const Icon(Icons.calendar_today),
+                      title: const Text('Fecha de fin', style: TextStyle(color: Colors.black)),
+                      subtitle: Text(
+                        fechaFin == null
+                            ? 'Seleccionar fecha'
+                            : DateFormat('dd/MM/yyyy').format(fechaFin!),
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                      trailing: const Icon(Icons.calendar_today, color: Colors.black),
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: context,
@@ -156,16 +185,17 @@ class AdminPlaneacionScreen extends StatelessWidget {
                           firstDate: fechaInicio ?? DateTime(2000),
                           lastDate: DateTime(2100),
                         );
-                        if (picked != null) {
-                          setStateDialog(() => fechaFin = picked);
-                        }
+                        if (picked != null) setStateDialog(() => fechaFin = picked);
                       },
                     ),
                   ],
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                ),
                 TextButton(
                   onPressed: () async {
                     if (nombreController.text.isNotEmpty && fechaInicio != null && fechaFin != null) {
@@ -177,7 +207,7 @@ class AdminPlaneacionScreen extends StatelessWidget {
                       if (success) Navigator.pop(context);
                     }
                   },
-                  child: const Text('Agregar'),
+                  child: const Text('Agregar', style: TextStyle(color: Colors.black)),
                 ),
               ],
             );
@@ -186,6 +216,7 @@ class AdminPlaneacionScreen extends StatelessWidget {
       },
     );
   }
+
 
   void _showEditDialog(BuildContext context, AdminPlaneacionesViewModel viewModel, Planeacion planeacion) {
     final nombreController = TextEditingController(text: planeacion.nombre);
@@ -198,23 +229,32 @@ class AdminPlaneacionScreen extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: const Text('Editar Planeación'),
+              backgroundColor: Colors.white,
+              title: const Text('Editar Planeación', style: TextStyle(color: Colors.black)),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextFormField(
                       controller: nombreController,
+                      style: const TextStyle(color: Colors.black),
                       decoration: const InputDecoration(
                         labelText: 'Nombre del mesociclo',
+                        labelStyle: TextStyle(color: Colors.black87),
                         border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.black),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
                     ListTile(
-                      title: const Text('Fecha de inicio'),
-                      subtitle: Text(DateFormat('dd/MM/yyyy').format(fechaInicio)),
-                      trailing: const Icon(Icons.calendar_today),
+                      title: const Text('Fecha de inicio', style: TextStyle(color: Colors.black)),
+                      subtitle: Text(
+                        DateFormat('dd/MM/yyyy').format(fechaInicio),
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                      trailing: const Icon(Icons.calendar_today, color: Colors.black),
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: context,
@@ -222,15 +262,16 @@ class AdminPlaneacionScreen extends StatelessWidget {
                           firstDate: DateTime(2000),
                           lastDate: fechaFin,
                         );
-                        if (picked != null) {
-                          setStateDialog(() => fechaInicio = picked);
-                        }
+                        if (picked != null) setStateDialog(() => fechaInicio = picked);
                       },
                     ),
                     ListTile(
-                      title: const Text('Fecha de fin'),
-                      subtitle: Text(DateFormat('dd/MM/yyyy').format(fechaFin)),
-                      trailing: const Icon(Icons.calendar_today),
+                      title: const Text('Fecha de fin', style: TextStyle(color: Colors.black)),
+                      subtitle: Text(
+                        DateFormat('dd/MM/yyyy').format(fechaFin),
+                        style: const TextStyle(color: Colors.black54),
+                      ),
+                      trailing: const Icon(Icons.calendar_today, color: Colors.black),
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: context,
@@ -238,16 +279,17 @@ class AdminPlaneacionScreen extends StatelessWidget {
                           firstDate: fechaInicio,
                           lastDate: DateTime(2100),
                         );
-                        if (picked != null) {
-                          setStateDialog(() => fechaFin = picked);
-                        }
+                        if (picked != null) setStateDialog(() => fechaFin = picked);
                       },
                     ),
                   ],
                 ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                ),
                 TextButton(
                   onPressed: () async {
                     final updated = planeacion.copyWith(
@@ -258,7 +300,7 @@ class AdminPlaneacionScreen extends StatelessWidget {
                     final success = await viewModel.actualizarPlaneacion(updated);
                     if (success) Navigator.pop(context);
                   },
-                  child: const Text('Guardar'),
+                  child: const Text('Guardar', style: TextStyle(color: Colors.black)),
                 ),
               ],
             );
@@ -267,6 +309,8 @@ class AdminPlaneacionScreen extends StatelessWidget {
       },
     );
   }
+
+
 
   void _showDeleteDialog(BuildContext context, AdminPlaneacionesViewModel viewModel, int id) {
     showDialog(

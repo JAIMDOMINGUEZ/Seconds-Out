@@ -77,21 +77,23 @@ class DatabaseService {
     )
   ''');
     await db.execute('''
-    CREATE TABLE medidas_antropometricas (
-      id_medida INTEGER PRIMARY KEY AUTOINCREMENT,
-      peso REAL NOT NULL,
-      talla REAL NOT NULL,
-      somatotipo TEXT,
-      imc REAL,
-      cintura_cadera REAL,
-      seis_pliegues REAL,
-      ocho_pliegues REAL,
-      p_graso REAL,
-      p_muscular REAL,
-      p_oseo REAL,
-      fecha TEXT NOT NULL UNIQUE
-    )
-  ''');
+  CREATE TABLE medidas_antropometricas (
+    id_medida INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_atleta INTEGER NOT NULL,
+    peso REAL NOT NULL,
+    talla REAL NOT NULL,
+    somatotipo TEXT,
+    imc REAL,
+    cintura_cadera REAL,
+    seis_pliegues REAL,
+    ocho_pliegues REAL,
+    p_graso REAL,
+    p_muscular REAL,
+    p_oseo REAL,
+    fecha TEXT NOT NULL ,
+    FOREIGN KEY (id_atleta) REFERENCES atleta(id_atleta) ON DELETE CASCADE
+  )
+''');
     await db.execute('''
     CREATE TABLE planeaciones (
         id_planeacion INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -108,7 +110,7 @@ class DatabaseService {
         nombre TEXT,
         fecha_inicio TEXT,
         fecha_fin TEXT,
-        FOREIGN KEY (id_planeacione) REFERENCES planeaciones(id_planeacione)
+        FOREIGN KEY (id_planeacion) REFERENCES planeaciones(id_planeacion)
     )
     ''');
     await db.execute('''
@@ -131,14 +133,210 @@ class DatabaseService {
     FOREIGN KEY (id_sesion) REFERENCES sesiones(id_sesion),
     FOREIGN KEY (id_ejercicio) REFERENCES ejercicios(id_ejercicio)
   )
+  ''');await db.execute('''
+   CREATE TABLE planeacion_grupo (
+     id_planeacion_grupo INTEGER PRIMARY KEY AUTOINCREMENT,
+     id_planeacion INTEGER NOT NULL,
+     id_grupo INTEGER NOT NULL,
+    FOREIGN KEY (id_planeacion) REFERENCES planeaciones(id_planeacion) ON DELETE CASCADE,
+    FOREIGN KEY (id_grupo) REFERENCES grupos(id_grupo) ON DELETE CASCADE
+  )
   ''');
 
+  await db.execute('''
+  CREATE TABLE pruebas_tecnicas (
+    id_prueba INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_atleta INTEGER NOT NULL,
+    fecha TEXT NOT NULL,
+    puntajeTotal INTEGER NOT NULL,
+    FOREIGN KEY (id_atleta) REFERENCES atletas(id_atleta) ON DELETE CASCADE
+  )
+''');
+
+    await db.execute('''
+  CREATE TABLE pruebas_fisicas (
+    id_prueba_fisica INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_prueba INTEGER NOT NULL,
+    resistencia INTEGER NOT NULL,
+    rapidez INTEGER NOT NULL,
+    fuerza INTEGER NOT NULL,
+    reaccion INTEGER NOT NULL,
+    explosividad INTEGER NOT NULL,
+    coordinacion INTEGER NOT NULL,
+    puntajeTotal INTEGER NOT NULL,
+    FOREIGN KEY (id_prueba) REFERENCES pruebas_tecnicas(id_prueba) ON DELETE CASCADE
+  )
+''');
+
+    await db.execute('''
+  CREATE TABLE pruebas_tacticas (
+    id_prueba_tactica INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_prueba INTEGER NOT NULL, 
+    distanciaCombate INTEGER NOT NULL,
+    preparacionOfensiva INTEGER NOT NULL,
+    eficienciaAtaque INTEGER NOT NULL,
+    eficienciaContraataque INTEGER NOT NULL,
+    entradaDistanciaCorta INTEGER NOT NULL,
+    salidaCuerpoACuerpo INTEGER NOT NULL,
+    puntajeTotal INTEGER NOT NULL,
+    FOREIGN KEY (id_prueba) REFERENCES pruebas_tecnicas(id_prueba) ON DELETE CASCADE
+  )
+''');
+
+    await db.execute('''
+  CREATE TABLE pruebas_tecnicas_detalladas (
+    id_prueba_tecnica_detallada INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_prueba INTEGER NOT NULL,
+    tecnicaGolpeo INTEGER NOT NULL,
+    distanciaGolpeo INTEGER NOT NULL,
+    movilidad INTEGER NOT NULL,
+    tecnica_defensiva INTEGER NOT NULL,
+    variabilidad_defensiva INTEGER NOT NULL,
+    puntajeTotal INTEGER NOT NULL,
+    FOREIGN KEY (id_prueba) REFERENCES pruebas_tecnicas(id_prueba) ON DELETE CASCADE
+  )
+''');
+
+    await db.execute('''
+  CREATE TABLE pruebas_psicologicas (
+    id_prueba_psicologica INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_prueba INTEGER NOT NULL,
+    autocontrol INTEGER NOT NULL,
+    combatividad INTEGER NOT NULL,
+    iniciativa INTEGER NOT NULL,
+    puntajeTotal INTEGER NOT NULL,
+    FOREIGN KEY (id_prueba) REFERENCES pruebas_tecnicas(id_prueba) ON DELETE CASCADE
+  )
+''');
+    await db.execute('''
+    CREATE TABLE pruebas_reglas (
+    pruebaTecnicaId INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_prueba INTEGER NOT NULL,
+    faltasTecnicas INTEGER NOT NULL,
+    conductaCombativa INTEGER NOT NULL,
+    puntajeTotal INTEGER NOT NULL,
+    FOREIGN KEY (id_prueba) REFERENCES pruebas_tecnicas(id_prueba) ON DELETE CASCADE
+  )
+''');
+
+    //tirgers
+    // Crear trigger para actualizar el puntaje total cuando se inserta/actualiza una prueba física
+    await db.execute('''
+  CREATE TRIGGER update_puntaje_total_fisico
+  AFTER INSERT ON pruebas_fisicas
+  BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+  END;
+''');
+
+    await db.execute('''
+  CREATE TRIGGER update_puntaje_total_fisico_update
+  AFTER UPDATE ON pruebas_fisicas
+  BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal - OLD.puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+  END;
+''');
+
+
+    await db.execute('''
+  CREATE TRIGGER update_puntaje_total_tactico
+  AFTER INSERT ON pruebas_tacticas
+  BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+  END;
+''');
+
+    await db.execute('''
+  CREATE TRIGGER update_puntaje_total_tactico_update
+  AFTER UPDATE ON pruebas_tacticas
+  BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal - OLD.puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+  END;
+''');
+
+    await db.execute('''
+  CREATE TRIGGER update_puntaje_total_tecnico
+  AFTER INSERT ON pruebas_tecnicas_detalladas
+  BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+  END;
+''');
+
+    await db.execute('''
+  CREATE TRIGGER update_puntaje_total_tecnico_update
+  AFTER UPDATE ON pruebas_tecnicas_detalladas
+  BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal - OLD.puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+  END;
+''');
+
+    await db.execute('''
+  CREATE TRIGGER update_puntaje_total_psicologico
+  AFTER INSERT ON pruebas_psicologicas
+  BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+  END;
+''');
+
+    await db.execute('''
+  CREATE TRIGGER update_puntaje_total_psicologico_update
+  AFTER UPDATE ON pruebas_psicologicas
+  BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal - OLD.puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+  END;
+''');
+    await db.execute('''
+  CREATE TRIGGER update_puntaje_total_reglas
+  AFTER INSERT ON pruebas_reglas
+  BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+    END;
+  ''');
+
+    await db.execute('''
+    CREATE TRIGGER update_puntaje_total_reglas_update
+    AFTER UPDATE ON pruebas_reglas
+    BEGIN
+    UPDATE pruebas_tecnicas
+    SET puntajeTotal = puntajeTotal - OLD.puntajeTotal + NEW.puntajeTotal
+    WHERE id_prueba = NEW.id_prueba;
+    END;
+    ''');
+
+
+
+    await db.execute('''
+  CREATE TABLE administradores (
+    id_administrador INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER NOT NULL,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(idUsuario)
+  )
+''');
 
   }
 
+
   static Future<void> _insertarDatosDePrueba(Database db) async {
     try {
-      // Insertar usuarios primero
+      // Insertar usuarios entrenadores
       final idUsuario1 = await db.insert('usuarios', {
         'nombre': 'Carlos Mendoza',
         'correo': 'carlos@box.com',
@@ -153,11 +351,10 @@ class DatabaseService {
         'fechaNacimiento': '1985-09-15',
       });
 
-      // Insertar entrenadores usando el repositorio
       final repo = EntrenadorRepository(db);
 
       await repo.insertarEntrenador(Entrenador(
-        idEntrenador: 0, // 0 para autoincremento
+        idEntrenador: 0,
         idUsuario: idUsuario1,
         usuario: Usuario(
           idUsuario: idUsuario1,
@@ -169,7 +366,7 @@ class DatabaseService {
       ));
 
       await repo.insertarEntrenador(Entrenador(
-        idEntrenador: 0, // 0 para autoincremento
+        idEntrenador: 0,
         idUsuario: idUsuario2,
         usuario: Usuario(
           idUsuario: idUsuario2,
@@ -180,11 +377,42 @@ class DatabaseService {
         ),
       ));
 
-      debugPrint('✅ Datos de prueba insertados correctamente');
+      // Insertar usuarios administradores
+      final idUsuario3 = await db.insert('usuarios', {
+        'nombre': 'admin1',
+        'correo': 'admin1@mya.com',
+        'contrasena': 'Mr2liedt',
+        'fechaNacimiento': '2001-09-01',
+      });
+
+      final idUsuario4 = await db.insert('usuarios', {
+        'nombre': 'james_backster',
+        'correo': 'james_backster@mya.com',
+        'contrasena': 'Mr2liedt',
+        'fechaNacimiento': '2001-09-01',
+      });
+
+      await insertarAdministradoresDePrueba(db, [idUsuario3, idUsuario4]);
+
+      debugPrint(' Datos de prueba insertados correctamente');
     } catch (e) {
-      debugPrint('❌ Error insertando datos de prueba: $e');
+      debugPrint(' Error insertando datos de prueba: $e');
     }
   }
+  static Future<void> insertarAdministradoresDePrueba(Database db, List<int> idUsuarios) async {
+    try {
+      for (var idUsuario in idUsuarios) {
+        await db.insert('administradores', {
+          'id_usuario': idUsuario,
+        });
+      }
+      debugPrint('Administradores de prueba insertados correctamente');
+    } catch (e) {
+      debugPrint(' Error insertando administradores de prueba: $e');
+    }
+  }
+
+
 
   static Future<void> debugDatabase(Database db) async {
     debugPrint('\n=== ESTRUCTURA ACTUAL ===');
