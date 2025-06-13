@@ -452,10 +452,10 @@ class _AgregarPruebasScreenState extends State<AgregarPruebasScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Agregar Pruebas'),
-        automaticallyImplyLeading: false, // 🔒 Desactiva la flecha automática
+        automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(), // 🔙 Solo regresa una pantalla
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
 
