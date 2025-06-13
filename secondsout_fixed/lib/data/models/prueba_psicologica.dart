@@ -20,7 +20,7 @@ class PruebaPsicologica {
     required this.puntajeTotal,
   });
 
-  /// Método de utilidad para crear una instancia calculando automáticamente el puntaje total.
+
   factory PruebaPsicologica.conPuntajeCalculado({
     required int id_prueba,
     required int id_prueba_psicologica,
@@ -58,7 +58,7 @@ class PruebaPsicologica {
     'puntajeTotal': puntajeTotal,
   };
 
-  /// Método que devuelve el puntaje total recalculado
+
   int calcularPuntajeTotal() {
     return autocontrol + combatividad + iniciativa;
   }

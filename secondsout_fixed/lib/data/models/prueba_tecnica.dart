@@ -13,7 +13,7 @@ class PruebaTecnica {
     required this.puntajeTotal,
   });
 
-  // Métodos para conversión desde/hacia Map (para SQLite)
+
   factory PruebaTecnica.fromMap(Map<String, dynamic> map) {
     return PruebaTecnica(
       id_prueba: map['id_prueba'],
@@ -32,12 +32,12 @@ class PruebaTecnica {
     };
   }
 
-  // Método para formatear la fecha
+
   String formatearFecha() {
     return DateFormat('dd/MM/yy').format(fecha);
   }
 
-  // Método para clonar con nuevos valores
+
   PruebaTecnica copyWith({
     int? id_prueba,
     int? idAtleta,

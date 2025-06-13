@@ -28,7 +28,7 @@ class Ejercicio {
         'tipo': tipo,
         'descripcion': descripcion,
       };
-  // Método copyWith para crear una copia modificada del objeto
+
   Ejercicio copyWith({
 
     String? nombre,

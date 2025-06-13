@@ -45,7 +45,7 @@ class AtletaRepository {
         u.fechaNacimiento 
       FROM atletas a
       JOIN usuarios u ON a.id_usuario = u.idUsuario
-    ''');
+    ''');/*
     for (var map in maps) {
       print('--- Atletas ---');
       print('id_atleta: ${map['id_atleta']}');
@@ -54,7 +54,7 @@ class AtletaRepository {
       print('correo: ${map['correo']}');
       print('contrasena: ${map['contrasena']}');
       print('fechaNacimiento: ${map['fechaNacimiento']}');
-    }
+    }*/
     return List.generate(maps.length, (i) {
       return Atleta(
         idAtleta: maps[i]['id_atleta'],
@@ -99,4 +99,38 @@ class AtletaRepository {
       );
     });
   }
+  Future<Atleta?> buscarAtletaPorId(int idAtleta) async {
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+    SELECT 
+      a.id_atleta, 
+      a.id_usuario, 
+      u.nombre, 
+      u.correo, 
+      u.contrasena, 
+      u.fechaNacimiento 
+    FROM atletas a
+    JOIN usuarios u ON a.id_usuario = u.idUsuario
+    WHERE a.id_atleta = ?
+    LIMIT 1
+  ''', [idAtleta]);
+
+    if (maps.isNotEmpty) {
+      final map = maps.first;
+      return Atleta(
+        idAtleta: map['id_atleta'],
+        idUsuario: map['id_usuario'],
+        usuario: Usuario(
+          idUsuario: map['id_usuario'],
+          nombre: map['nombre'],
+          correo: map['correo'],
+          contrasena: map['contrasena'],
+          fechaNacimiento: map['fechaNacimiento'],
+        ),
+      );
+    } else {
+      return null; // No encontrado
+    }
+  }
+
+
 }

@@ -10,29 +10,29 @@ class GrupoAtletaRepository {
 
   /// Agregar atleta a grupo
   Future<int> agregarAtletaAGrupo(int idGrupo, int idAtleta) async {
-    print('Insertando atleta $idAtleta en grupo $idGrupo...');
+   // print('Insertando atleta $idAtleta en grupo $idGrupo...');
     final result = await db.insert('grupo_atletas', {
       'id_grupo': idGrupo,
       'id_atleta': idAtleta,
     });
-    print('Insertado con resultado: $result');
+    //print('Insertado con resultado: $result');
     return result;
   }
 
   /// Eliminar atleta de grupo
   Future<void> eliminarAtletaDeGrupo(int idGrupo, int idAtleta) async {
-    print('Eliminando atleta $idAtleta del grupo $idGrupo...');
+    //print('Eliminando atleta $idAtleta del grupo $idGrupo...');
     final count = await db.delete(
       'grupo_atletas',
       where: 'id_grupo = ? AND id_atleta = ?',
       whereArgs: [idGrupo, idAtleta],
     );
-    print('Filas eliminadas: $count');
+    //print('Filas eliminadas: $count');
   }
 
   /// Obtener atletas de un grupo
   Future<List<Atleta>> obtenerAtletasPorGrupo(int idGrupo) async {
-    print('Obteniendo atletas del grupo $idGrupo...');
+    //print('Obteniendo atletas del grupo $idGrupo...');
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT 
         a.id_atleta, a.id_usuario, u.nombre, u.correo, u.contrasena, u.fechaNacimiento
@@ -42,7 +42,7 @@ class GrupoAtletaRepository {
       WHERE ga.id_grupo = ?
     ''', [idGrupo]);
 
-    print('Se encontraron ${maps.length} atletas en el grupo $idGrupo');
+    //print('Se encontraron ${maps.length} atletas en el grupo $idGrupo');
 
     return List.generate(maps.length, (i) {
       return Atleta(
@@ -60,7 +60,7 @@ class GrupoAtletaRepository {
   }
 
   Future<List<int>> obtenerIdsAtletasPorGrupo(int idGrupo) async {
-    print('Obteniendo IDs de atletas del grupo $idGrupo...');
+    //print('Obteniendo IDs de atletas del grupo $idGrupo...');
     final List<Map<String, dynamic>> maps = await db.query(
       'grupo_atletas',
       columns: ['id_atleta'],

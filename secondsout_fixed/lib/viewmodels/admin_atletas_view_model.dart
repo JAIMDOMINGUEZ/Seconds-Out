@@ -138,4 +138,19 @@ class AdminAtletasViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<Atleta?> buscarAtletaPorId(int idAtleta) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final atleta = await _atletaRepository.buscarAtletaPorId(idAtleta);
+      _errorMessage = null;
+      return atleta;
+    } catch (e) {
+      _errorMessage = 'Error al buscar atleta: $e';
+      return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

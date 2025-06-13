@@ -16,7 +16,7 @@ class Entrenador {
   Map<String, dynamic> toMap() {
     final map = {
       'id_usuario': idUsuario,
-      // No incluyas id_entrenador si es autoincremental
+
     };
     if (idEntrenador != 0) {
       map['id_entrenador'] = idEntrenador;

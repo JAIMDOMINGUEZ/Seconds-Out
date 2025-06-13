@@ -50,7 +50,7 @@ class Administrador extends Usuario {
 
   @override
   Map<String, dynamic> toRemoteMap() {
-    // TODO: implement toRemoteMap
+
     throw UnimplementedError();
   }incronizado,
     'tipo': 'administrador',

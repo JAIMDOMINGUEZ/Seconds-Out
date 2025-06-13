@@ -18,14 +18,14 @@ class MedidasRepository {
   }
 
   Future<int> insertarMedida(MedidaAntropometrica medida) async {
-    print('Insertando medida: ${medida.toLocalMap()}');
+    //print('Insertando medida: ${medida.toLocalMap()}');
     final id = await _database.insert(_tableName, medida.toLocalMap());
-    print('Medida insertada con id: $id');
+    //print('Medida insertada con id: $id');
     return id;
   }
 
   Future<int> actualizarMedida(MedidaAntropometrica medida) async {
-    print('Actualizando medida id: ${medida.idMedida}, datos: ${medida.toLocalMapForUpdate()}');
+    //print('Actualizando medida id: ${medida.idMedida}, datos: ${medida.toLocalMapForUpdate()}');
     final count = await _database.update(
       _tableName,
       medida.toLocalMapForUpdate(),
@@ -39,30 +39,30 @@ class MedidasRepository {
 
 
   Future<int> eliminarMedida(int idMedida) async {
-    print('Eliminando medida con id: $idMedida');
+    //print('Eliminando medida con id: $idMedida');
     final count = await _database.delete(
       _tableName,
       where: 'id_medida = ?',
       whereArgs: [idMedida],
     );
-    print('Cantidad de registros eliminados: $count');
+    //print('Cantidad de registros eliminados: $count');
     return count;
   }
 
   Future<List<MedidaAntropometrica>> obtenerMedidasPorAtleta(int atletaId) async {
-    print('Obteniendo medidas para atleta id: $atletaId');
+    //print('Obteniendo medidas para atleta id: $atletaId');
     final maps = await _database.query(
       _tableName,
       where: 'id_atleta = ?',
       whereArgs: [atletaId],
     );
-    print('Medidas obtenidas para atleta $atletaId: ${maps.length}');
+    //print('Medidas obtenidas para atleta $atletaId: ${maps.length}');
     return maps.map((map) => MedidaAntropometrica.fromLocalMap(map)).toList();
   }
 
   Future<MedidaAntropometrica?> obtenerMedidaMasReciente(int atletaId) async {
     try {
-      print('Obteniendo medida más reciente para atleta id: $atletaId');
+      //print('Obteniendo medida más reciente para atleta id: $atletaId');
       final maps = await _database.query(
         _tableName,
         where: 'id_atleta = ?',
@@ -81,7 +81,7 @@ class MedidasRepository {
       }
       return null;
     } catch (e) {
-      print('Error en obtenerMedidaMasReciente: $e');
+      //print('Error en obtenerMedidaMasReciente: $e');
       rethrow;
     }
   }

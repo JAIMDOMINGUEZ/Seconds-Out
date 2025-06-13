@@ -51,7 +51,7 @@ class PruebaFisica {
     );
   }
 
-  /// Método para recalcular el puntaje total si lo necesitas en otro momento
+
   int calcularPuntajeTotal() {
     return resistencia + rapidez + fuerza + reaccion + explosividad + coordinacion;
   }

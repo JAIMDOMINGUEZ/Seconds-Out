@@ -1,20 +1,15 @@
 import 'package:sqflite/sqflite.dart';
+import '../data/models/usuario_tipo.dart';
 import '/data/models/usuario.dart';
-import '/data/models/usuario_login.dart';
+
 
 class UsuarioRepository {
   final Database db;
 
   UsuarioRepository(this.db);
 
-  Future<UsuarioLogin?> login(String correo, String contrasena) async {
+  Future<Usuario?> buscarPorCorreoYContrasena(String correo, String contrasena) async {
     try {
-      // Validación básica
-      if (correo.isEmpty || contrasena.isEmpty) {
-        throw Exception('Correo y contraseña son requeridos');
-      }
-
-      // Buscar usuario
       final usuarios = await db.query(
         'usuarios',
         where: 'correo = ? AND contrasena = ?',
@@ -22,47 +17,66 @@ class UsuarioRepository {
         limit: 1,
       );
 
-      if (usuarios.isEmpty) return null;
-
-      final usuario = Usuario.fromMap(usuarios.first);
-      final tipoUsuario = await _determinarTipoUsuario(usuario.idUsuario);
-
-      return UsuarioLogin(usuario: usuario, tipoUsuario: tipoUsuario);
+      if (usuarios.isNotEmpty) {
+        return Usuario.fromMap(usuarios.first);
+      }
+      return null;
     } catch (e) {
-      throw Exception('Error en login: ${e.toString()}');
+      throw Exception('Error buscando usuario: ${e.toString()}');
     }
   }
 
-  Future<TipoUsuario> _determinarTipoUsuario(int idUsuario) async {
+
+  Future<UsuarioConTipo> determinarTipoUsuario(int idUsuario) async {
+    //print('Buscando tipo para usuario ID: $idUsuario');
     // Verificar administrador
-    final admins = await db.query(
-      'administradores',
-      where: 'id_usuario = ?',
-      whereArgs: [idUsuario],
-      limit: 1,
+    final admins = await db.rawQuery(
+      'SELECT * FROM administradores WHERE id_usuario = ?',
+      [idUsuario],
     );
-    if (admins.isNotEmpty) return TipoUsuario.administrador;
+    //print('Resultado admin: $admins');
+    if (admins.isNotEmpty) {
+      print('Usuario es administrador');
+      return UsuarioConTipo(
+          admins.first['id_administrador'] as int,
+          "admin",
+      );
+    }
 
     // Verificar entrenador
-    final entrenadores = await db.query(
-      'entrenadores',
-      where: 'id_usuario = ?',
-      whereArgs: [idUsuario],
-      limit: 1,
+    final entrenadores = await db.rawQuery(
+      'SELECT * FROM entrenadores WHERE id_usuario = ?',
+      [idUsuario],
     );
-    if (entrenadores.isNotEmpty) return TipoUsuario.entrenador;
+    //print('Resultado entrenador: $entrenadores');
+    if (entrenadores.isNotEmpty) {
+      print('Usuario es entrenador');
+      return UsuarioConTipo(
+          entrenadores.first['id_entrenador'] as int,
+          "entrenador",
+
+      );
+    }
 
     // Verificar atleta
-    final atletas = await db.query(
-      'atletas',
-      where: 'id_usuario = ?',
-      whereArgs: [idUsuario],
-      limit: 1,
+    final atletas = await db.rawQuery(
+      'SELECT * FROM atletas WHERE id_usuario = ?',
+      [idUsuario],
     );
-    if (atletas.isNotEmpty) return TipoUsuario.atleta;
+    //print('Resultado atleta: $atletas');
+    if (atletas.isNotEmpty) {
+      //print('Usuario es atleta');
+      return UsuarioConTipo(
+          atletas.first['id_atleta'] as int,
+          "atleta",
 
-    return TipoUsuario.desconocido;
+      );
+    }
+
+    //print('Usuario no encontrado en ninguna tabla específica');
+    return UsuarioConTipo(idUsuario, "no se encontro");
   }
+
 
   Future<int> insertarUsuario(Usuario usuario) async {
     try {

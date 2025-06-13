@@ -38,7 +38,7 @@ class EntrenadorRepository {
         u.fechaNacimiento 
       FROM entrenadores e
       JOIN usuarios u ON e.id_usuario = u.idUsuario
-    ''');
+    ''');/*
     for (var map in maps) {
       print('--- Entrenador ---');
       print('id_entrenador: ${map['id_entrenador']}');
@@ -47,7 +47,7 @@ class EntrenadorRepository {
       print('correo: ${map['correo']}');
       print('contrasena: ${map['contrasena']}');
       print('fechaNacimiento: ${map['fechaNacimiento']}');
-    }
+    }*/
 
     return List.generate(maps.length, (i) {
       return Entrenador(

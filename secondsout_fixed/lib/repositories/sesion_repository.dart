@@ -16,12 +16,13 @@ class SesionRepository {
       where: 'id_semana = ?',
       whereArgs: [idSemana],
     );
+    /*
     print('_________________________');
     for(var map in maps){
       print('id sesion: ${map['id_sesion']}');
       print('nombre: ${map['nombre']}');
 
-    }
+    }*/
 
     return maps.map((map) => Sesion.fromJson(map)).toList();
   }

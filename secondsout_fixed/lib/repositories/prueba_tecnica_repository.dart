@@ -8,25 +8,26 @@ class PruebasTecnicasRepository {
 
   // Obtener todas las pruebas de un atleta
   Future<List<PruebaTecnica>> obtenerPruebasPorAtleta(int atletaId) async {
-    print('Obteniendo pruebas para el atleta con ID: $atletaId');
+    //print('Obteniendo pruebas para el atleta con ID: $atletaId');
     final pruebas = await db.query(
       'pruebas_tecnicas',
       where: 'id_atleta = ?',
       whereArgs: [atletaId],
       orderBy: 'fecha DESC',
     );
-    print('Pruebas obtenidas: ${pruebas.length}');
+    //print('Pruebas obtenidas: ${pruebas.length}');
+    /*
     for (var prueba in pruebas) {
       print('Prueba: $prueba');
-    }
+    }*/
     return pruebas.map((e) => PruebaTecnica.fromMap(e)).toList();
   }
 
   // Agregar una nueva prueba
   Future<int> agregarPrueba(PruebaTecnica prueba) async {
-    print('Agregando nueva prueba: ${prueba.toMap()}');
+    //print('Agregando nueva prueba: ${prueba.toMap()}');
     final id = await db.insert('pruebas_tecnicas', prueba.toMap());
-    print('Prueba insertada con ID: $id');
+    //print('Prueba insertada con ID: $id');
     return id;
   }
 

@@ -6,6 +6,8 @@ import 'package:secondsout_fixed/screens/admin_medidas_screen.dart' show AdminMe
 import 'package:secondsout_fixed/screens/admin_planeacion_screen.dart';
 import 'package:secondsout_fixed/viewmodels/ejercicio_asignado_view_model.dart';
 import 'package:secondsout_fixed/viewmodels/planeacion_grupo_view_model.dart';
+import 'package:secondsout_fixed/viewmodels/usuario_view_model.dart';
+//import '/migrates/controles.dart';
 import 'package:sqflite/sqflite.dart';
 
 // Servicios y repositorios
@@ -43,7 +45,7 @@ void main() async {
 
   try {
     final database = await DatabaseService.initializeDB();
-
+    //realizarMigracion();
     runApp(
       MultiProvider(
         providers: [
@@ -156,6 +158,11 @@ void main() async {
             create: (context) => PlaneacionGrupoViewModel(
               database: context.read<Database>(),
             ),
+          ),
+
+
+          ChangeNotifierProvider<UsuarioViewModel>(
+            create: (context) => UsuarioViewModel(context.read<UsuarioRepository>()),
           ),
 
 

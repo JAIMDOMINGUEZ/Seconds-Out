@@ -20,7 +20,7 @@ class DatabaseService {
       onCreate: _onCreate,
       version: _databaseVersion,
     );
-    await DatabaseService.debugDatabase(db);
+    //await DatabaseService.debugDatabase(db);
     await _insertarDatosDePrueba(db); // Insertar datos de prueba
     return db;
   }
